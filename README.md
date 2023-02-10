@@ -29,4 +29,4 @@ Module with markers and contour within an area
 - leaflet files local
 
 ## Limitations
-- you can only have 1 maps per page.
+- you can only have 1 maps per page??
