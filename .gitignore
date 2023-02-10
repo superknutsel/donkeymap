@@ -1,3 +1,5 @@
+.idea
+
 /.htaccess
 /administrator/cache/*
 /administrator/components/com_actionlogs/*
