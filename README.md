@@ -8,6 +8,7 @@ Module with markers and contour within an area
 - select extra articles individual to be added to the list of articles
 - select articles that should be removed from this list (sub-category or individual article)
 - maximum number of articles
+- test a custom field (yet to be named) if the location should be shown
 
 ### Marker selection
 - marker per category in each module
