@@ -14,6 +14,7 @@ Module with markers and contour within an area
 - marker per category in each module
 - set size of markers
 - default marker
+- change marker based in custom field
 
 ### Area's
 - Multiple polygon borders off area's (in custom fields?)
