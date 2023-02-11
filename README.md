@@ -8,4 +8,4 @@ Module with markers and contour within an area
 
 # Tips
 - create category polygon and set it to noindex / nofollow
-- create and article per polygon in this category and also set in to noindex / nofollow
+- create and article per polygon with no text editor active in this category and also set in to noindex / nofollow
