@@ -1,0 +1,24 @@
+.donkey-map-upload-list-field {
+    display: flex;
+    width: 100%;
+}
+
+.donkey-map-upload-list-field select {
+    border-left: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.btn.btn-secondary.donkey-map-upload-trigger,
+.btn.btn-secondary.donkey-map-upload-trigger:active,
+.btn.btn-secondary.donkey-map-upload-trigger:focus {
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    border-right: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.donkey-map-upload-group input[type=file] {
+    display: none;
+}

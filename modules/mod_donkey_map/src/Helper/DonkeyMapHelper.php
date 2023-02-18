@@ -12,10 +12,10 @@ namespace Joomla\Module\DonkeyMap\Site\Helper;
 use Joomla\CMS\Access\Access;
 use Joomla\CMS\Application\SiteApplication;
 use Joomla\CMS\Component\ComponentHelper;
-use Joomla\CMS\Factory;
 use Joomla\CMS\Router\Route;
 use Joomla\Component\Content\Site\Helper\RouteHelper;
 use Joomla\Component\Content\Site\Model\ArticlesModel;
+use Joomla\Component\Fields\Administrator\Helper\FieldsHelper;
 use Joomla\Database\DatabaseAwareInterface;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Registry\Registry;
@@ -34,17 +34,72 @@ class DonkeyMapHelper implements DatabaseAwareInterface
 {
     use DatabaseAwareTrait;
 
+    public function getMarkers(Registry $params, SiteApplication $app): array
+    {
+        $markers = [];
+
+        foreach ($this->getArticles($params, $app) as $article) {
+            // Get article's custom fields.
+            $fields = FieldsHelper::getFields('com_content.article', $article, true);
+            // Make custom field's accessible by name.
+            $fieldsByName = ArrayHelper::pivot($fields, 'name');
+
+            // Check if custom field "location" exists and has a value. Without it, we're done.
+            if (!isset($fieldsByName['location'])) {
+                continue;
+            }
+
+            // Extract and decode de the field value.
+            $rawFieldValue = json_decode($fieldsByName['location']->rawvalue);
+
+            // Obtain the location's coordinates,
+            $coordinates = trim($rawFieldValue->coordinates);
+
+            // Check if we have coordinates. Without them, we're done.
+            if (!$coordinates) {
+                continue;
+            }
+
+            // Split coordinates into separate latitude and longitude values.
+            [$lat, $long] = explode(',', $coordinates);
+
+            // Extract and decode de the article's image data.
+            $articleImages = json_decode($article->images);
+
+            // Compose popup content by combining article intro text and intro image.
+            $popupContent = addslashes(str_replace(["\r", "\n"], "", $article->introtext));
+            if (!empty($articleImages->image_intro)) :
+                $popupContent .= '<img src="' . $articleImages->image_intro . '" style="width: 200px;">';
+            endif;
+
+            // Accumulate marker data as objects in an array.
+            $markers[] = (object)[
+                'name'        => $article->category_alias,
+                'coordinates' => (object)[
+                    'lat'  => (float)$lat,
+                    'long' => (float)$long,
+                ],
+                'categoryId'  => (int)$article->catid,
+                'title'       => addslashes(str_replace(["\r", "\n"], "", $article->title)),
+                'popup'       => (object)[
+                    'content' => trim($popupContent),
+                    'link'    => $article->link,
+                ],
+            ];
+        }
+
+        return $markers;
+    }
+
     /**
      * Retrieve a list of article
      *
      * @param   Registry       $params  The module parameters.
      * @param   ArticlesModel  $model   The model.
      *
-     * @return  mixed
-     *
-     * @since   4.2.0
+     * @return  array
      */
-    public function getArticles(Registry $params, SiteApplication $app)
+    public function getArticles(Registry $params, SiteApplication $app): array
     {
         // Get the Dbo and User object
         $db   = $this->getDatabase();
@@ -146,23 +201,6 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             }
         }
 
-        return $items;
-    }
-
-    /**
-     * Retrieve a list of articles
-     *
-     * @param   Registry       $params  The module parameters.
-     * @param   ArticlesModel  $model   The model.
-     *
-     * @return  mixed
-     *
-     * @deprecated 5.0 Use the none static function getArticles
-     * @since      1.6
-     *
-     */
-    public static function getList(Registry $params, ArticlesModel $model)
-    {
-        return (new self())->getArticles($params, Factory::getApplication());
+        return $items ?: [];
     }
 }

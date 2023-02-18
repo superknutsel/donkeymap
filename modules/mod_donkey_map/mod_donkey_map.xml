@@ -1,143 +1,327 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="module" client="site" method="upgrade">
-	<name>mod_donkey_map</name>
-	<author>Obix webtechniek</author>
-	<creationDate>2023-02-10</creationDate>
-	<copyright>(C) 2023 Obix webtechniek</copyright>
-	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
-	<authorEmail>pieter@obix.nl</authorEmail>
-	<authorUrl>www.obix.nl</authorUrl>
-	<version>1.0.0</version>
-	<description>MOD_DONKEY_MAP_XML_DESCRIPTION</description>
-	<namespace path="src">Joomla\Module\DonkeyMap</namespace>
+    <name>mod_donkey_map</name>
+    <author>Obix webtechniek</author>
+    <creationDate>2023-02-10</creationDate>
+    <copyright>(C) 2023 Obix webtechniek</copyright>
+    <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+    <authorEmail>pieter@obix.nl</authorEmail>
+    <authorUrl>www.obix.nl</authorUrl>
+    <version>1.0.0</version>
+    <description>MOD_DONKEY_MAP_XML_DESCRIPTION</description>
+    <namespace path="src">Joomla\Module\DonkeyMap</namespace>
 
-	<files>
-		<folder module="mod_donkey_map">services</folder>
-		<folder>language</folder>
-		<folder>src</folder>
-		<folder>tmpl</folder>
-	</files>
+    <files>
+        <folder module="mod_donkey_map">services</folder>
+        <folder>language</folder>
+        <folder>src</folder>
+        <folder>tmpl</folder>
+    </files>
 
-	<help key="Site_Modules:_Donkey_-_Map" />
+    <media folder="media">
+        <folder>mod_donkey_map</folder>
+    </media>
 
-	<config>
-		<fields name="params">
-			<fieldset name="basic">
-				<field
-					name="catid"
-					type="category"
-					label="JCATEGORY"
-					extension="com_content"
-					multiple="true"
-					layout="joomla.form.field.list-fancy-select"
-					filter="intarray"
-				/>
+    <help key="Site_Modules:_Donkey_-_Map"/>
 
-				<field
-					name="count"
-					type="number"
-					label="MOD_DONKEY_MAP_FIELD_COUNT_LABEL"
-					default="5"
-					filter="integer"
-					min="1"
-					validate="number"
-				/>
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field
+                        name="catid"
+                        type="category"
+                        label="JCATEGORY"
+                        extension="com_content"
+                        layout="joomla.form.field.list-fancy-select"
+                        filter="intarray"
+                        multiple="true"
+                        required="true"
+                />
 
-				<field
-					name="show_featured"
-					type="list"
-					label="MOD_DONKEY_MAP_FIELD_FEATURED_LABEL"
-					default=""
-					filter="integer"
-					validate="options"
-					>
-					<option value="">JSHOW</option>
-					<option value="0">JHIDE</option>
-					<option value="1">MOD_DONKEY_MAP_VALUE_ONLY_SHOW_FEATURED</option>
-				</field>
+                <field
+                        name="count"
+                        type="number"
+                        label="MOD_DONKEY_MAP_FIELD_COUNT_LABEL"
+                        default="5"
+                        filter="integer"
+                        min="1"
+                        validate="number"
+                />
 
-				<field
-					name="ordering"
-					type="list"
-					label="MOD_DONKEY_MAP_FIELD_ORDERING_LABEL"
-					default="p_dsc"
-					validate="options"
-					>
-					<option value="c_dsc">MOD_DONKEY_MAP_VALUE_RECENT_ADDED</option>
-					<option value="m_dsc">MOD_DONKEY_MAP_VALUE_RECENT_MODIFIED</option>
-					<option value="p_dsc">MOD_DONKEY_MAP_VALUE_RECENT_PUBLISHED</option>
-					<option value="mc_dsc">MOD_DONKEY_MAP_VALUE_RECENT_TOUCHED</option>
-					<option	value="random">MOD_DONKEY_MAP_VALUE_RECENT_RAND</option>
-				</field>
+                <field
+                        name="show_featured"
+                        type="list"
+                        label="MOD_DONKEY_MAP_FIELD_FEATURED_LABEL"
+                        default=""
+                        filter="integer"
+                        validate="options"
+                >
+                    <option value="">JSHOW</option>
+                    <option value="0">JHIDE</option>
+                    <option value="1">MOD_DONKEY_MAP_VALUE_ONLY_SHOW_FEATURED</option>
+                </field>
 
-				<field
-					name="user_id"
-					type="list"
-					label="MOD_DONKEY_MAP_FIELD_USER_LABEL"
-					default="0"
-					validate="options"
-					>
-					<option value="0">MOD_DONKEY_MAP_VALUE_ANYONE</option>
-					<option value="by_me">MOD_DONKEY_MAP_VALUE_ADDED_BY_ME</option>
-					<option value="not_me">MOD_DONKEY_MAP_VALUE_NOTADDED_BY_ME</option>
-					<option value="created_by">MOD_DONKEY_MAP_VALUE_CREATED_BY</option>
-				</field>
+                <field
+                        name="ordering"
+                        type="list"
+                        label="MOD_DONKEY_MAP_FIELD_ORDERING_LABEL"
+                        default="p_dsc"
+                        validate="options"
+                >
+                    <option value="c_dsc">MOD_DONKEY_MAP_VALUE_RECENT_ADDED</option>
+                    <option value="m_dsc">MOD_DONKEY_MAP_VALUE_RECENT_MODIFIED</option>
+                    <option value="p_dsc">MOD_DONKEY_MAP_VALUE_RECENT_PUBLISHED</option>
+                    <option value="mc_dsc">MOD_DONKEY_MAP_VALUE_RECENT_TOUCHED</option>
+                    <option value="random">MOD_DONKEY_MAP_VALUE_RECENT_RAND</option>
+                </field>
 
-				<field
-					name="author"
-					type="author"
-					label="MOD_DONKEY_MAP_FIELD_AUTHOR_LABEL"
-					multiple="true"
-					layout="joomla.form.field.list-fancy-select"
-					showon="user_id:created_by"
-				/>
-			</fieldset>
+                <field
+                        name="user_id"
+                        type="list"
+                        label="MOD_DONKEY_MAP_FIELD_USER_LABEL"
+                        default="0"
+                        validate="options"
+                >
+                    <option value="0">MOD_DONKEY_MAP_VALUE_ANYONE</option>
+                    <option value="by_me">MOD_DONKEY_MAP_VALUE_ADDED_BY_ME</option>
+                    <option value="not_me">MOD_DONKEY_MAP_VALUE_NOTADDED_BY_ME</option>
+                    <option value="created_by">MOD_DONKEY_MAP_VALUE_CREATED_BY</option>
+                </field>
 
-			<fieldset name="advanced">
-				<field
-					name="layout"
-					type="modulelayout"
-					label="JFIELD_ALT_LAYOUT_LABEL"
-					class="form-select"
-					validate="moduleLayout"
-				/>
+                <field
+                        name="author"
+                        type="author"
+                        label="MOD_DONKEY_MAP_FIELD_AUTHOR_LABEL"
+                        multiple="true"
+                        layout="joomla.form.field.list-fancy-select"
+                        showon="user_id:created_by"
+                />
+            </fieldset>
 
-				<field
-					name="moduleclass_sfx"
-					type="textarea"
-					label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
-					rows="3"
-					validate="CssIdentifier"
-				/>
+            <fieldset
+                    name="map"
+                    addfieldprefix="Joomla\Module\DonkeyMap\Site\Form\Field"
+                    addruleprefix="Joomla\Module\DonkeyMap\Site\Form\Rule"
+            >
+                <field
+                        name="map_center"
+                        type="subform"
+                        label="MOD_DONKEY_MAP_FIELD_MAP_CENTER_LABEL"
+                        multiple="false"
+                        min="1"
+                        max="1"
+                        required="true"
+                >
+                    <form>
+                        <field
+                                name="lat"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_MAP_CENTER_LATITUDE_LABEL"
+                                required="true"
+                                default="54.393"
+                        />
+                        <field
+                                name="long"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_MAP_CENTER_LONGITUDE_LABEL"
+                                required="true"
+                                default="-2.329"
+                        />
+                    </form>
+                </field>
 
-				<field
-					name="cache"
-					type="list"
-					label="COM_MODULES_FIELD_CACHING_LABEL"
-					default="1"
-					filter="integer"
-					validate="options"
-					>
-					<option value="1">JGLOBAL_USE_GLOBAL</option>
-					<option value="0">COM_MODULES_FIELD_VALUE_NOCACHING</option>
-				</field>
+                <field
+                        name="initial_zoom"
+                        type="number"
+                        label="MOD_DONKEY_MAP_FIELD_INITIAL_ZOOM_LABEL"
+                        required="true"
+                        default="6"
+                />
 
-				<field
-					name="cache_time"
-					type="number"
-					label="COM_MODULES_FIELD_CACHE_TIME_LABEL"
-					default="900"
-					filter="integer"
-				/>
+                <field
+                        name="polygon"
+                        type="filelistupload"
+                        directory="/media/mod_donkey_map/polygons"
+                        label="MOD_DONKEY_MAP_FIELD_MAP_POLYGON_LABEL"
+                        fileFilter="\.json$"
+                        accept=".json, application/json, application/ld+json"
+                        hide_default="true"
+                        validate="ValidPolygonJson"
+                />
+            </fieldset>
 
-				<field
-					name="cachemode"
-					type="hidden"
-					default="static"
-					>
-					<option value="static"></option>
-				</field>
-			</fieldset>
-		</fields>
-	</config>
+            <fieldset name="marker">
+                <field
+                        name="default_marker_icon"
+                        type="media"
+                        label="MOD_DONKEY_MAP_FIELD_DEFAULT_ICON_LABEL"
+                        preview="tooltip"
+                        preview_width="40"
+                        preview_height="40"
+                        required="true"
+                />
+
+                <field
+                        name="category_markers"
+                        type="subform"
+                        label="MOD_DONKEY_MAP_FIELD_CATEGORY_MARKERS_LABEL"
+                        multiple="true"
+                        layout="joomla.form.field.subform.repeatable-table"
+                >
+                    <form>
+                        <field
+                                name="catid"
+                                type="category"
+                                label="JCATEGORY"
+                                extension="com_content"
+                                layout="joomla.form.field.list-fancy-select"
+                                filter="intarray"
+                                required="true"
+                        />
+                        <field
+                                name="icon"
+                                type="media"
+                                label="MOD_DONKEY_MAP_FIELD_ICON_LABEL"
+                                preview="tooltip"
+                                preview_width="40"
+                                preview_height="40"
+                                required="true"
+                        />
+                    </form>
+                </field>
+
+                <field
+                        name="icon_size"
+                        type="subform"
+                        label="MOD_DONKEY_MAP_FIELD_ICON_SETTINGS_SIZE_LABEL"
+                        multiple="false"
+                        required="true"
+                >
+                    <form>
+                        <field
+                                name="width"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_WIDTH_LABEL"
+                                required="true"
+                                default="40"
+                        />
+                        <field
+                                name="height"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_HEIGHT_LABEL"
+                                required="true"
+                                default="40"
+                        />
+                    </form>
+                </field>
+
+                <field
+                        name="icon_anchor"
+                        type="subform"
+                        label="MOD_DONKEY_MAP_FIELD_ICON_SETTINGS_ANCHOR_LABEL"
+                        multiple="false"
+                        required="true"
+                >
+                    <form>
+                        <field
+                                name="left"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_LEFT_LABEL"
+                                required="true"
+                                default="20"
+                        />
+                        <field
+                                name="top"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_TOP_LABEL"
+                                required="true"
+                                default="40"
+                        />
+                    </form>
+                </field>
+
+                <field
+                        name="icon_popup_anchor"
+                        type="subform"
+                        label="MOD_DONKEY_MAP_FIELD_ICON_SETTINGS_POPUP_ANCHOR_LABEL"
+                        multiple="false"
+                        required="true"
+                >
+                    <form>
+                        <field
+                                name="left"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_LEFT_LABEL"
+                                required="true"
+                                default="0"
+                        />
+                        <field
+                                name="top"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_TOP_LABEL"
+                                required="true"
+                                default="-45"
+                        />
+                    </form>
+                </field>
+
+                <field
+                        name="clustering_enabled"
+                        type="radio"
+                        default="0"
+                        label="MOD_DONKEY_MAP_FIELD_ENABLE_CLUSTERING_LABEL"
+                        layout="joomla.form.field.radio.switcher"
+                        class="btn-group btn-group-yesno">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="advanced">
+                <field
+                        name="layout"
+                        type="modulelayout"
+                        label="JFIELD_ALT_LAYOUT_LABEL"
+                        class="form-select"
+                        validate="moduleLayout"
+                />
+
+                <field
+                        name="moduleclass_sfx"
+                        type="textarea"
+                        label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+                        rows="3"
+                        validate="CssIdentifier"
+                />
+
+                <field
+                        name="cache"
+                        type="list"
+                        label="COM_MODULES_FIELD_CACHING_LABEL"
+                        default="1"
+                        filter="integer"
+                        validate="options"
+                >
+                    <option value="1">JGLOBAL_USE_GLOBAL</option>
+                    <option value="0">COM_MODULES_FIELD_VALUE_NOCACHING</option>
+                </field>
+
+                <field
+                        name="cache_time"
+                        type="number"
+                        label="COM_MODULES_FIELD_CACHE_TIME_LABEL"
+                        default="900"
+                        filter="integer"
+                />
+
+                <field
+                        name="cachemode"
+                        type="hidden"
+                        default="static"
+                >
+                    <option value="static"></option>
+                </field>
+            </fieldset>
+        </fields>
+    </config>
 </extension>
