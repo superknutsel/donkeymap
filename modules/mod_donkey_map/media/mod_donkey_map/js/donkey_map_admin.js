@@ -12,7 +12,7 @@
       const listElement = document.getElementById(this.listId);
       const uploadElement = document.getElementById(this.uploadId);
       const triggerElement = document.getElementById(this.uploadTriggerId);
-      const messageContainerSelector = this.params?.messageContainerSelector?.trim().length ? this.params.messageContainerSelector : "#system-message-container";
+      const messageContainerSelector = this.params?.messageContainerSelector?.trim() ? this.params.messageContainerSelector : "#system-message-container";
       if (!(listElement && uploadElement && triggerElement)) {
         return;
       }
@@ -30,11 +30,11 @@
         if (response.ok) {
           const json = await response.json();
           if (!json.success) {
-            Joomla.renderMessages({ "error": [json.message?.trim().length ? json.message : "Upload failed!"] }, messageContainerSelector);
+            Joomla.renderMessages({ "error": [json.message?.trim() ? json.message : "Upload failed!"] }, messageContainerSelector);
             return;
           }
           this.syncList(uploadElement, listElement);
-          Joomla.renderMessages({ "info": [json.message?.trim().length ? json.message : "Upload succeeded!"] }, messageContainerSelector, false, 5e3);
+          Joomla.renderMessages({ "info": [json.message?.trim() ? json.message : "Upload succeeded!"] }, messageContainerSelector, false, 5e3);
           return;
         }
         Joomla.renderMessage({ "error": ["HTTP-Error: " + response.status] }, messageContainerSelector);

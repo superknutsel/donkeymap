@@ -11,6 +11,10 @@ class ValidPolygonJsonRule extends FormRule
 {
     public function test(\SimpleXMLElement $element, $value, $group = null, Registry $input = null, Form $form = null)
     {
+        if ($value === '-1') {
+            return true;
+        }
+
         $folder = strtolower(trim((string)$element['directory'] ?? ''));
 
         try {
@@ -33,7 +37,8 @@ class ValidPolygonJsonRule extends FormRule
             throw new \RuntimeException(Text::_('MOD_DONKEY_MAP_UPLOAD_ERROR_UPLOADED_FILE_NOT_FOUND'));
         }
 
-        $o = json_decode(file_get_contents($filePath));
+        $json = file_get_contents($filePath);
+        $o = json_decode($json);
 
         if (($o->type ?? '') !== 'GeometryCollection'
             || !is_array($o->geometries)

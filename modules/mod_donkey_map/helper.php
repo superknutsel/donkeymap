@@ -4,7 +4,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Response\JsonResponse;
 use Joomla\Module\DonkeyMap\Site\Helper\DonkeyMapHelper;
-use Joomla\Module\DonkeyMap\Site\MVC\PolygonSpecificationModel;
+use Joomla\Module\DonkeyMap\Site\Helper\PolygonHelper;
 
 class ModDonkeyMapHelper
 {
@@ -28,7 +28,7 @@ class ModDonkeyMapHelper
 
             switch ($action) {
                 case 'upload':
-                    (new PolygonSpecificationModel($app))->save();
+                    (new PolygonHelper($app))->upload();
                     break;
             }
         } catch (\ErrorException $e) {

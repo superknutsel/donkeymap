@@ -12,7 +12,7 @@ export default class UploadHandler {
         const listElement = document.getElementById(this.listId);
         const uploadElement = document.getElementById(this.uploadId);
         const triggerElement = document.getElementById(this.uploadTriggerId);
-        const messageContainerSelector = this.params?.messageContainerSelector?.trim().length ? this.params.messageContainerSelector : '#system-message-container';
+        const messageContainerSelector = this.params?.messageContainerSelector?.trim() ? this.params.messageContainerSelector : '#system-message-container';
 
         if (!(listElement && uploadElement && triggerElement)) {
             return
@@ -44,13 +44,13 @@ export default class UploadHandler {
 
                 // If the upload failed, show the provided message or an appropriate default.
                 if (!json.success) {
-                    Joomla.renderMessages({'error': [json.message?.trim().length ? json.message : 'Upload failed!']}, messageContainerSelector);
+                    Joomla.renderMessages({'error': [json.message?.trim() ? json.message : 'Upload failed!']}, messageContainerSelector);
                     return;
                 }
 
                 // If the upload succeeded, sync the select list and show the provided message or an appropriate default.
                 this.syncList(uploadElement, listElement)
-                Joomla.renderMessages({'info': [json.message?.trim().length ? json.message : 'Upload succeeded!']}, messageContainerSelector, false, 5000);
+                Joomla.renderMessages({'info': [json.message?.trim() ? json.message : 'Upload succeeded!']}, messageContainerSelector, false, 5000);
 
                 return;
             }

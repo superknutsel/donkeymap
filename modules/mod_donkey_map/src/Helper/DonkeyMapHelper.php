@@ -83,7 +83,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 'title'       => addslashes(str_replace(["\r", "\n"], "", $article->title)),
                 'popup'       => (object)[
                     'content' => trim($popupContent),
-                    'link'    => $article->link,
+                    'link'    => trim($article->link),
                 ],
             ];
         }
@@ -130,7 +130,9 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         $model->setState('filter.access', $access);
 
         // Category filter
-        $model->setState('filter.category_id', $params->get('catid', []));
+        $categoryIds = array_map(fn(object $category) => (int)$category->categoryId[0],
+            array_values((array)$params->get('categories', [])));
+        $model->setState('filter.category_id', $categoryIds);
 
         // State filter
         $model->setState('filter.condition', 1);

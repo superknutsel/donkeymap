@@ -1,12 +1,12 @@
 <?php
 
-namespace Joomla\Module\DonkeyMap\Site\MVC;
+namespace Joomla\Module\DonkeyMap\Site\Helper;
 
 use Joomla\CMS\Application\CMSApplicationInterface;
 use Joomla\CMS\Language\Text;
 use Joomla\Module\DonkeyMap\Site\Form\Rule\ValidPolygonJsonRule;
 
-class PolygonSpecificationModel
+class PolygonHelper
 {
     private CMSApplicationInterface $app;
 
@@ -20,7 +20,7 @@ class PolygonSpecificationModel
         $this->app = $app;
     }
 
-    public function save(): void
+    public function upload(): void
     {
         $input = $this->app->getInput();
 
@@ -154,7 +154,7 @@ class PolygonSpecificationModel
     /**
      * @param   array  $allowedMimeTypes
      *
-     * @return PolygonSpecificationModel
+     * @return PolygonHelper
      */
     public function setAllowedMimeTypes(array $allowedMimeTypes): static
     {
@@ -166,7 +166,7 @@ class PolygonSpecificationModel
     /**
      * @param   string  $allowedMimeType
      *
-     * @return PolygonSpecificationModel
+     * @return PolygonHelper
      */
     public function addValidMimeType(string $allowedMimeType): static
     {
@@ -187,7 +187,7 @@ class PolygonSpecificationModel
     /**
      * @param   array  $acceptableFileTypes
      *
-     * @return PolygonSpecificationModel
+     * @return PolygonHelper
      */
     public function setAcceptableFileTypes(array $acceptableFileTypes): static
     {
@@ -199,7 +199,7 @@ class PolygonSpecificationModel
     /**
      * @param   string  $acceptableFileType
      *
-     * @return PolygonSpecificationModel
+     * @return PolygonHelper
      */
     public function addAcceptableFileType(string $acceptableFileType): static
     {
@@ -220,7 +220,7 @@ class PolygonSpecificationModel
     /**
      * @param   callable[]  $moreChecks
      *
-     * @return PolygonSpecificationModel
+     * @return PolygonHelper
      */
     public function setMoreChecks(array $moreChecks): static
     {
@@ -232,7 +232,7 @@ class PolygonSpecificationModel
     /**
      * @param   callable  $check
      *
-     * @return PolygonSpecificationModel
+     * @return PolygonHelper
      */
     public function addCheck(callable $check): static
     {

@@ -38,33 +38,86 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
     {
         $data = parent::getLayoutData();
 
-        $mapCenterParam = $data['params']->get('map_center');
-        $polygonParam = json_decode($data['params']->get('polygon'));
+        $data['mapConfig']    = $this->getMapConfig($data);
+        $data['markerConfig'] = $this->getMarkerConfig($data);
+        $data['markerList']   = $this->getMarkerList($data);
 
-        $mapConfig = (object)[
-            'center'      => (object)[
+        return $data;
+    }
+
+    private function getMapConfig(array $data): object
+    {
+        $mapCenterParam = $data['params']->get('map_center');
+
+        return (object)[
+            'center'             => (object)[
                 'lat'  => (float)$mapCenterParam->lat,
                 'long' => (float)$mapCenterParam->long,
             ],
-            'initialZoom' => (float)$data['params']->get('initial_zoom'),
-            'polygon' => $polygonParam->geometries[0]->coordinates[0][0]
+            'initialZoom'        => (float)$data['params']->get('initial_zoom'),
+            'polygonCoordinates' => $this->getPolygonCoordinates($data),
+            'polygonAttributes'  => $this->getPolygonAttributes($data),
         ];
+    }
 
-        // Convert category/marker associations to a manageable array.
-        $categoryMarkers = array_values((array)$data['params']->get('category_markers'));
+    private function getPolygonCoordinates(array $data): array
+    {
+        $param = $data['params']->get('polygon');
+
+        if ($param === '-1') {
+            return [];
+        }
+
+        $polygonFile   = JPATH_ROOT . '/media/mod_donkey_map/polygons/' . $param;
+        $polygonJson   = file_get_contents($polygonFile);
+        $polygonObject = json_decode($polygonJson);
+
+        // latituede & longitude are in the wrong odrer for Leaflet, so let's fix that.
+        $coordinates = [];
+
+        foreach ($polygonObject->geometries[0]->coordinates[0][0] as $point) {
+            $coordinates[] = [$point[1], $point[0]];
+        }
+
+        return $coordinates;
+    }
+
+    private function getPolygonAttributes(array $data): object
+    {
+        $param = $data['params']->get('polygon_attributes');
+
+        return (object) [
+            'color' => $param->color,
+            'opacity' => $param->opacity,
+            'weight' => $param->weight,
+            'fillColor' => $param->fill_color,
+            'fillOpacity' => $param->fill_opacity
+        ];
+    }
+
+    private function getMarkerConfig(array $data): object
+    {
+        // Convert category/marker associations to an array containing icon file paths indexed by category id.
+        $categoryMarkerIcons = array_values((array)$data['params']->get('categories', []));
+        $iconsByCatId        = array_reduce($categoryMarkerIcons, function (array $carry, object $marker) {
+            $carry[(int)$marker->categoryId[0]] = $marker->icon ? Uri::root() . $marker->icon : '';
+
+            return $carry;
+        }, []);
 
         $iconSizeParam        = $data['params']->get('icon_size');
         $iconAnchorParam      = $data['params']->get('icon_anchor');
         $iconPopupAnchorParam = $data['params']->get('icon_popup_anchor');
 
-        $markerConfig = [
-            'defaultIcon'   => Uri::root() . '/' . $data['params']->get('default_marker_icon'),
+        if ($defaultIcon = $data['params']->get('default_marker_icon', '')) {
+            $defaultIcon = Uri::root() . $defaultIcon;
+        }
+
+        return (object)[
+            'defaultIcon'       => $defaultIcon,
             // Create an array containing category id/icon combination objects.
-            'categoryIcons' => array_map(
-                fn(object $o) => (object)['catId' => (int)$o->catid[0], 'icon' => Uri::root() . '/' . $o->icon],
-                $categoryMarkers
-            ),
-            'iconConfig'    => (object)[
+            'categoryIcons'     => $iconsByCatId,
+            'iconConfig'        => (object)[
                 'size'        => (object)[
                     'width'  => (int)$iconSizeParam->width,
                     'height' => (int)$iconSizeParam->height,
@@ -78,24 +131,17 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
                     'left' => (int)$iconPopupAnchorParam->left,
                 ],
             ],
-            'clusteringEnabled' => (int) $data['params']->get('clustering_enabled', 0) ? true : false
+            'clusteringEnabled' => (int)$data['params']->get('clustering_enabled', 0) ? true : false,
         ];
+    }
 
-        $data['mapConfig']    = $mapConfig;
-        $data['markerConfig'] = $markerConfig;
-
+    private function getMarkerList(array $data): array
+    {
         $helper = $this->getHelperFactory()->getHelper('DonkeyMapHelper');
 
-        $data['markerList'] = $helper->getMarkers(
+        return $helper->getMarkers(
             $data['params'],
             $this->getApplication()
         );
-
-        $data['list'] = $helper->getArticles(
-            $data['params'],
-            $this->getApplication()
-        );
-
-        return $data;
     }
 }
