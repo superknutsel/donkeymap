@@ -11,8 +11,6 @@ defined('_JEXEC') or die;
 
 // https://docs.joomla.org/J3.x:Adding_JavaScript_and_CSS_to_the_page
 use Joomla\CMS\Factory;
-use \Joomla\Component\Fields\Administrator\Helper\FieldsHelper;
-use Joomla\CMS\Uri\Uri;
 
 $document = Factory::getApplication()->getDocument();
 
