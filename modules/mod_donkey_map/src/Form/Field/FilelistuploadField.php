@@ -238,7 +238,7 @@ class FilelistuploadField extends ListField
         }
 
         // Get a list of files in the search path with the given filter.
-        $files = Folder::files($path, $this->fileFilter);
+        $files = file_exists($path) ? Folder::files($path, $this->fileFilter) : [];
 
         // Build the options list from the list of files.
         if (\is_array($files)) {

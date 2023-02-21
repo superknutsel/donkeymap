@@ -82,6 +82,10 @@ class PolygonHelper
         $newFolder  = trim(str_replace(JPATH_ROOT, '', $newFolder), '\\/');
         $moveToPath = JPATH_ROOT . '/' . trim($newFolder, '\\/') . '/' . trim($newName, '\\/');
 
+        if (!file_exists($newFolder)) {
+            mkdir($newFolder, 0755, true);
+        }
+
         if (!move_uploaded_file($tmpPath, $moveToPath)) {
             throw new \RuntimeException('Failed to move uploaded file.');
         }
