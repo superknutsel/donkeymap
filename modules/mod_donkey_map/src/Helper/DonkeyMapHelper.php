@@ -115,7 +115,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
      *
      * @return  array
      */
-    public function getArticles(Registry $params, SiteApplication $app): array
+    public function getArticles(Registry $params, SiteApplication $app): \Generator
     {
         // Get the Dbo and User object
         $db   = $this->getDatabase();
@@ -191,9 +191,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             $model->setState('filter.featured', 'hide');
         }
 
-        $items = $model->getItems();
-
-        foreach ($items as &$item) {
+        foreach ($model->getItems() as $item) {
             $item->slug = $item->id . ':' . $item->alias;
 
             if ($access || \in_array($item->access, $authorised)) {
@@ -202,8 +200,8 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             } else {
                 $item->link = Route::_('index.php?option=com_users&view=login');
             }
-        }
 
-        return $items ?: [];
+            yield $item;
+        }
     }
 }
