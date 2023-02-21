@@ -21,12 +21,10 @@ use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 
-// phpcs:disable PSR1.Files.SideEffects
 \defined('_JEXEC') or die;
-// phpcs:enable PSR1.Files.SideEffects
 
 /**
- * Helper for mod_donkey_map
+ * General helper for mod_donkey_map.
  *
  * @since  1.6
  */
@@ -34,17 +32,30 @@ class DonkeyMapHelper implements DatabaseAwareInterface
 {
     use DatabaseAwareTrait;
 
+    /**
+     * Returns an array containing marker definitions based on content of regular Joomla! articles.
+     *
+     * @param   \Joomla\Registry\Registry                $params
+     * @param   \Joomla\CMS\Application\SiteApplication  $app
+     *
+     * @return array
+     * @throws \Exception
+     */
     public function getMarkers(Registry $params, SiteApplication $app): array
     {
         $markers = [];
 
+        // Process articles matching any filter setting as configured in the module instance
+        // and create marker objects based on their content.
         foreach ($this->getArticles($params, $app) as $article) {
             // Get article's custom fields.
             $fields = FieldsHelper::getFields('com_content.article', $article, true);
             // Make custom field's accessible by name.
             $fieldsByName = ArrayHelper::pivot($fields, 'name');
 
-            // Check if custom field "location" exists and has a value. Without it, we're done.
+            // The article is supposed to have a custom field named "location" of type input[type=text],
+            // which must contain a pair of numeric coordinates formatted as: lat,long.
+            // E.g.: 54.12995696954786,-2.4445791703280912
             if (!isset($fieldsByName['location'])) {
                 continue;
             }
@@ -61,12 +72,13 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             }
 
             // Split coordinates into separate latitude and longitude values.
+            // TODO: validate and handle invalid input.
             [$lat, $long] = explode(',', $coordinates);
 
-            // Extract and decode de the article's image data.
+            // Extract and decode the article's image data.
             $articleImages = json_decode($article->images);
 
-            // Compose popup content by combining article intro text and intro image.
+            // Compose marker popup content by combining article intro text and image.
             $popupContent = addslashes(str_replace(["\r", "\n"], "", $article->introtext));
             if (!empty($articleImages->image_intro)) :
                 $popupContent .= '<img src="' . $articleImages->image_intro . '" style="width: 200px;">';
@@ -92,7 +104,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
     }
 
     /**
-     * Retrieve a list of article
+     * Retrieve a list of article, filtered by attributes as configured for the module instance.
      *
      * @param   Registry       $params  The module parameters.
      * @param   ArticlesModel  $model   The model.
@@ -174,21 +186,6 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         } else {
             $model->setState('filter.featured', 'hide');
         }
-
-        // Set ordering
-        $order_map = [
-            'm_dsc'  => 'a.modified DESC, a.created',
-            'mc_dsc' => 'a.modified',
-            'c_dsc'  => 'a.created',
-            'p_dsc'  => 'a.publish_up',
-            'random' => $db->getQuery(true)->rand(),
-        ];
-
-        $ordering = ArrayHelper::getValue($order_map, $params->get('ordering'), 'a.publish_up');
-        $dir      = 'DESC';
-
-        $model->setState('list.ordering', $ordering);
-        $model->setState('list.direction', $dir);
 
         $items = $model->getItems();
 
