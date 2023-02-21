@@ -86,20 +86,6 @@
                 </field>
 
                 <field
-                        name="ordering"
-                        type="list"
-                        label="MOD_DONKEY_MAP_FIELD_ORDERING_LABEL"
-                        default="p_dsc"
-                        validate="options"
-                >
-                    <option value="c_dsc">MOD_DONKEY_MAP_VALUE_RECENT_ADDED</option>
-                    <option value="m_dsc">MOD_DONKEY_MAP_VALUE_RECENT_MODIFIED</option>
-                    <option value="p_dsc">MOD_DONKEY_MAP_VALUE_RECENT_PUBLISHED</option>
-                    <option value="mc_dsc">MOD_DONKEY_MAP_VALUE_RECENT_TOUCHED</option>
-                    <option value="random">MOD_DONKEY_MAP_VALUE_RECENT_RAND</option>
-                </field>
-
-                <field
                         name="user_id"
                         type="list"
                         label="MOD_DONKEY_MAP_FIELD_USER_LABEL"
