@@ -23,8 +23,8 @@
       const iconsByCategory = this.getIconsByCategory();
       const layerGroups = /* @__PURE__ */ new Map();
       this.markerList.forEach((item) => {
-        const categoryKey = Number(item.categoryId);
-        const layerName = item.name;
+        const categoryKey = Number(item.category.id);
+        const layerName = item.category.title;
         const markerIcon = iconsByCategory.has(categoryKey) ? iconsByCategory.get(categoryKey) : defaultIcon;
         if (!markerIcon) {
           return;

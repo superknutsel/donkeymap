@@ -13,6 +13,7 @@ use Joomla\CMS\Access\Access;
 use Joomla\CMS\Application\SiteApplication;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Router\Route;
+use Joomla\CMS\Uri\Uri;
 use Joomla\Component\Content\Site\Helper\RouteHelper;
 use Joomla\Component\Content\Site\Model\ArticlesModel;
 use Joomla\Component\Fields\Administrator\Helper\FieldsHelper;
@@ -79,20 +80,23 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             $articleImages = json_decode($article->images);
 
             // Compose marker popup content by combining article intro text and image.
-            $popupContent = addslashes(str_replace(["\r", "\n"], "", $article->introtext));
+            $popupContent = $article->introtext;
             if (!empty($articleImages->image_intro)) :
-                $popupContent .= '<img src="' . $articleImages->image_intro . '" style="width: 200px;">';
+                $popupContent .= '<img src="' . Uri::root() . $articleImages->image_intro . '" style="width: 200px;">';
             endif;
 
             // Accumulate marker data as objects in an array.
             $markers[] = (object)[
-                'name'        => $article->category_alias,
+                'category' => [
+                    'id'  => (int)$article->catid,
+                    'title'        => $article->category_title,
+                    'alias'        => $article->category_alias,
+                ],
                 'coordinates' => (object)[
                     'lat'  => (float)$lat,
                     'long' => (float)$long,
                 ],
-                'categoryId'  => (int)$article->catid,
-                'title'       => addslashes(str_replace(["\r", "\n"], "", $article->title)),
+                'title'       => $article->title,
                 'popup'       => (object)[
                     'content' => trim($popupContent),
                     'link'    => trim($article->link),

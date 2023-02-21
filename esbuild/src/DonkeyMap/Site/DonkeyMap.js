@@ -44,9 +44,9 @@ export default class DonkeyMap {
         // Process all items in the list of markers.
         this.markerList.forEach(item => {
             // Get the key of the item by which to access the icons Map, making sure it is a Number.
-            const categoryKey = Number(item.categoryId);
+            const categoryKey = Number(item.category.id);
             // Get the name of the Layer, to be used as the index for the layer groups Map.
-            const layerName = item.name;
+            const layerName = item.category.title;
             // Get the item's icon , using the default icon if no such icon exists for the item.
             const markerIcon = iconsByCategory.has(categoryKey) ? iconsByCategory.get(categoryKey) : defaultIcon;
 
