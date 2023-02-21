@@ -6,24 +6,49 @@ use Joomla\CMS\Application\CMSApplicationInterface;
 use Joomla\CMS\Language\Text;
 use Joomla\Module\DonkeyMap\Site\Form\Rule\ValidPolygonJsonRule;
 
+/**
+ * Helper for mod_donkey_map for uploading of outline polygon files.
+ */
 class PolygonHelper
 {
+    /**
+     * @var \Joomla\CMS\Application\CMSApplicationInterface
+     */
     private CMSApplicationInterface $app;
 
+    /**
+     * A list of acceptible mime types.
+     *
+     * @var array
+     */
     private array $allowedMimeTypes = [];
 
-    // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#accept
+    /**
+     * A list of acceptible file types.
+     * see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#accept
+     *
+     * @var array
+     */
     private array $acceptableFileTypes = [];
 
+    /**
+     * @param   \Joomla\CMS\Application\CMSApplicationInterface  $app
+     */
     public function __construct(CMSApplicationInterface $app)
     {
         $this->app = $app;
     }
 
+    /**
+     * Handles a file upload.
+     *
+     * @return void
+     */
     public function upload(): void
     {
         $input = $this->app->getInput();
 
+        // Get the
         $uploadedFile = $input->files->get('polygons', [], 'ARRAY');
         $uploadParams         = $input->get('upload_params', [], 'ARRAY');
 
@@ -44,6 +69,13 @@ class PolygonHelper
         );
     }
 
+    /**
+     * @param   string  $tmpPath
+     * @param   string  $newName
+     * @param   string  $newFolder
+     *
+     * @return void
+     */
     private function move(string $tmpPath, string $newName, string $newFolder): void
     {
         // Trim any (back)slashes from arguments.
@@ -55,6 +87,11 @@ class PolygonHelper
         }
     }
 
+    /**
+     * @param   array  $uploadedFile
+     *
+     * @return void
+     */
     private function checkUpload(array $uploadedFile): void
     {
         // Check for errors in $_FILES parameters.
@@ -127,6 +164,11 @@ class PolygonHelper
         }
     }
 
+    /**
+     * @param   string  $size
+     *
+     * @return int
+     */
     public function sizeInBytes(string $size): int
     {
         static $exp = [

@@ -1,11 +1,13 @@
 (() => {
   // src/DonkeyMap/Site/DonkeyMap.js
   var DonkeyMap = class {
+    // Instantiate object, accepting various map related attributes.
     constructor(mapConfig, markerConfig, markerList) {
       this.mapConfig = mapConfig;
       this.markerConfig = markerConfig;
       this.markerList = markerList;
     }
+    // Instantiate a Leaflet map, attaching it to a DOM element.
     attach(container) {
       this.map = L.map(container).setView([this.mapConfig.center.lat, this.mapConfig.center.long], this.mapConfig.initialZoom);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -13,7 +15,7 @@
       }).addTo(this.map);
       L.control.scale().addTo(this.map);
       this.addMarkers();
-      this.addPolygon();
+      this.addOutline();
     }
     addMarkers() {
       const donkeyMapIcon = this.getDonkeyMapIconType();
@@ -22,6 +24,7 @@
       const layerGroups = /* @__PURE__ */ new Map();
       this.markerList.forEach((item) => {
         const categoryKey = Number(item.categoryId);
+        const layerName = item.name;
         const markerIcon = iconsByCategory.has(categoryKey) ? iconsByCategory.get(categoryKey) : defaultIcon;
         if (!markerIcon) {
           return;
@@ -32,13 +35,15 @@
         if (item?.popup?.content && item?.popup?.link) {
           marker.bindPopup('<a href="' + item.popup.link + '">' + item.title + "</a>" + item.popup.content);
         }
-        if (!layerGroups.has(categoryKey)) {
-          layerGroups.set(categoryKey, this.markerConfig.clusteringEnabled ? L.markerClusterGroup() : L.layerGroup());
+        if (!layerGroups.has(layerName)) {
+          layerGroups.set(layerName, this.markerConfig.clusteringEnabled ? L.markerClusterGroup() : L.layerGroup());
         }
-        layerGroups.get(categoryKey).addLayer(marker);
+        layerGroups.get(layerName).addLayer(marker);
       });
-      layerGroups.forEach((marker, categoryKey) => marker.addTo(this.map));
+      layerGroups.forEach((group, categoryKey) => group.addTo(this.map));
+      L.control.layers({}, Object.fromEntries(layerGroups)).addTo(this.map);
     }
+    // Create a Map of icons, accessible by category id.
     getIconsByCategory() {
       const donkeyMapIcon = this.getDonkeyMapIconType();
       const iconMap = /* @__PURE__ */ new Map();
@@ -49,6 +54,7 @@
       }
       return iconMap;
     }
+    // Create an icon with preset attributes for creation of marker objects.
     getDonkeyMapIconType() {
       return L.Icon.extend({
         options: {
@@ -58,7 +64,9 @@
         }
       });
     }
-    addPolygon() {
+    // Add an outline to a designated arrea, using a polygon definition based on latitude/logitude coordinates
+    // and provided color attributes.
+    addOutline() {
       if (!this.mapConfig?.polygonCoordinates.length) {
         return;
       }

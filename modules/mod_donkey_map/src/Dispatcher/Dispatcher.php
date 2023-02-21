@@ -28,7 +28,7 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
     use HelperFactoryAwareTrait;
 
     /**
-     * Returns the layout data.
+     * Returns the layout data for the module.
      *
      * @return  array
      *
@@ -36,8 +36,10 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
      */
     protected function getLayoutData()
     {
+        // Get default layout data.
         $data = parent::getLayoutData();
 
+        // Add map specific layout data.
         $data['mapConfig']    = $this->getMapConfig($data);
         $data['markerConfig'] = $this->getMarkerConfig($data);
         $data['markerList']   = $this->getMarkerList($data);
@@ -45,6 +47,13 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         return $data;
     }
 
+    /**
+     * Returns an array with attributes for display of the map itself.
+     *
+     * @param   array  $data
+     *
+     * @return object
+     */
     private function getMapConfig(array $data): object
     {
         $mapCenterParam = $data['params']->get('map_center');
@@ -60,21 +69,36 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         ];
     }
 
+    /**
+     * Returns an array containing polygon latitude/logtitude coordinates
+     * for drawing an outline around a designated area on the map.
+     *
+     * @param   array  $data
+     *
+     * @return array
+     */
     private function getPolygonCoordinates(array $data): array
     {
+        // Get the file name of a polygon JSON definition, if any.
         $param = $data['params']->get('polygon');
 
         if ($param === '-1') {
             return [];
         }
 
+        // The file is supposed to be in a sub folder of the module's media folder.
+        // We assume the file contains a valid GeoJSON definition of a polygon as
+        // can be obtained here: http://polygons.openstreetmap.fr
         $polygonFile   = JPATH_ROOT . '/media/mod_donkey_map/polygons/' . $param;
+        // Read the file and convert it into a usable PHP object.
         $polygonJson   = file_get_contents($polygonFile);
         $polygonObject = json_decode($polygonJson);
 
         // latituede & longitude are in the wrong odrer for Leaflet, so let's fix that.
         $coordinates = [];
 
+        // Extract the coordinates from the GeoJSON object and swap latitude and longitude
+        // in order to be usable with Leaflet.
         foreach ($polygonObject->geometries[0]->coordinates[0][0] as $point) {
             $coordinates[] = [$point[1], $point[0]];
         }
@@ -82,6 +106,13 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         return $coordinates;
     }
 
+    /**
+     * Returns an array containing polygon display style attributes.
+     *
+     * @param   array  $data
+     *
+     * @return object
+     */
     private function getPolygonAttributes(array $data): object
     {
         $param = $data['params']->get('polygon_attributes');
@@ -95,6 +126,13 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         ];
     }
 
+    /**
+     * Returns an array containing markers associated with Joomla! categories.
+     *
+     * @param   array  $data
+     *
+     * @return object
+     */
     private function getMarkerConfig(array $data): object
     {
         // Convert category/marker associations to an array containing icon file paths indexed by category id.
@@ -135,6 +173,13 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         ];
     }
 
+    /**
+     * Returns an array containing marker definitions based on content of regular Joomla! articles.
+     *
+     * @param   array  $data
+     *
+     * @return array
+     */
     private function getMarkerList(array $data): array
     {
         $helper = $this->getHelperFactory()->getHelper('DonkeyMapHelper');
