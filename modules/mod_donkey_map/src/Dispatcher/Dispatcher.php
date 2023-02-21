@@ -56,12 +56,17 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
      */
     private function getMapConfig(array $data): object
     {
+        $mapContainerParam = $data['params']->get('map_container');
         $mapCenterParam = $data['params']->get('map_center');
 
         return (object)[
+            'container' => (object)[
+                'width'  => $mapContainerParam->width ?? '',
+                'height' => $mapContainerParam->height ?? ''
+            ],
             'center'             => (object)[
                 'lat'  => (float)$mapCenterParam->lat,
-                'long' => (float)$mapCenterParam->long,
+                'long' => (float)$mapCenterParam->long
             ],
             'initialZoom'        => (float)$data['params']->get('initial_zoom'),
             'polygonCoordinates' => $this->getPolygonCoordinates($data),
@@ -137,8 +142,8 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
     {
         // Convert category/marker associations to an array containing icon file paths indexed by category id.
         $categoryMarkerIcons = array_values((array)$data['params']->get('categories', []));
-        $iconsByCatId        = array_reduce($categoryMarkerIcons, function (array $carry, object $marker) {
-            $carry[(int)$marker->categoryId[0]] = $marker->icon ? Uri::root() . $marker->icon : '';
+        $iconsByCatId        = array_reduce($categoryMarkerIcons, function (array $carry, object $categoryMarker) {
+            $carry[(int)$categoryMarker->categoryId[0]] = $categoryMarker->icon ? Uri::root() . $categoryMarker->icon : '';
 
             return $carry;
         }, []);

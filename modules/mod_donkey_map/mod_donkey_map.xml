@@ -114,6 +114,30 @@
                     addruleprefix="Joomla\Module\DonkeyMap\Site\Form\Rule"
             >
                 <field
+                        name="map_container"
+                        type="subform"
+                        label="MOD_DONKEY_MAP_FIELD_CONTAINER_DIMENSIONS_LABEL"
+                        multiple="false"
+                        min="1"
+                        max="1"
+                >
+                    <form>
+                        <field
+                                name="width"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_CONTAINER_WIDTH_LABEL"
+                                default="650px"
+                        />
+                        <field
+                                name="height"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_CONTAINER_HEIGHT_LABEL"
+                                default="350px"
+                        />
+                    </form>
+                </field>
+
+                <field
                         name="map_center"
                         type="subform"
                         label="MOD_DONKEY_MAP_FIELD_MAP_CENTER_LABEL"

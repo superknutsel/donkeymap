@@ -17,7 +17,7 @@ $document = Factory::getApplication()->getDocument();
 /** @var object $module */
 /** @var object $mapConfig */
 /** @var object $markerConfig */
-$containerId = 'donkey-map-' . $module->id;
+/** @var array $markerList */
 
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wam */
 $wam = Factory::getApplication()->getDocument()->getWebAssetManager();
@@ -30,9 +30,21 @@ $wam->registerAndUseScript(
     'mod_donkey_map/donkey_map_site.min.js',
     []
 );
+
+$containerId = 'donkey-map-' . $module->id;
+
+$containerStyles = [];
+
+if ($value = trim($mapConfig->container->width)) {
+    $containerStyles[] = 'width:' . $value;
+}
+if ($value = trim($mapConfig->container->height)) {
+    $containerStyles[] = 'height:' . $value;
+}
+$containerStyleAttribute = count($containerStyles) ? 'style="' . implode(';', $containerStyles) . '"' : '';
 ?>
 
-<div id="<?= $containerId ?>" style="width: 100%; height: 350px;"></div>
+<div id="<?= $containerId ?>" <?= $containerStyleAttribute ?>></div>
 
 <script>
     document.addEventListener('DOMContentLoaded', e => {
