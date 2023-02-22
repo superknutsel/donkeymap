@@ -1,6 +1,9 @@
 export default class DonkeyMap {
     // Instantiate object, accepting various map related attributes.
     constructor(mapConfig, markerConfig, markerList) {
+        // No idea how to make the clustering plugin available otherwise.
+        require('../../../node_modules/leaflet.markercluster/dist/leaflet.markercluster');
+
         // Attributes for configuration of the map itself.
         this.mapConfig = mapConfig;
         // Attributes for configuration of markers.

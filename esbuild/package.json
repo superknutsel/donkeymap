@@ -2,7 +2,8 @@
   "dependencies": {
     "esbuild": "0.17.7",
     "esbuild-plugin-copy": "2.0.2",
-    "leaflet": "^1.9.3"
+    "leaflet": "^1.9.3",
+    "leaflet.markercluster": "^1.5.3"
   },
   "type": "module",
   "scripts": {
