@@ -80,7 +80,9 @@ export default class DonkeyMap {
         // Add all layer groups to the map.
         layerGroups.forEach((group, categoryKey) => group.addTo(this.map));
 
-        // Add a control to the map, containing checkboxes the user can use to selectively hide markers based on their category.
+        // Add a control to the map, containing checkboxes the user can use
+        // to selectively hide markers based on their category.
+
         L.control.layers({}, Object.fromEntries(layerGroups)).addTo(this.map);
     }
 
@@ -90,12 +92,14 @@ export default class DonkeyMap {
         const donkeyMapIcon = this.getDonkeyMapIconType();
         const iconMap = new Map();
 
-        // Process all items in de category icons list.
-        for (let categoryId in this.markerConfig.categoryIcons) {
+        // Process all categories
+        for (let categoryId in this.markerConfig.categories) {
+            const category = this.markerConfig.categories[categoryId];
+
             // If an image is available, create an icon object and add it to the Map,
             // making sure the category id is a Number.
-            if (this.markerConfig.categoryIcons[categoryId].trim()) {
-                iconMap.set(Number(categoryId), new donkeyMapIcon({iconUrl: this.markerConfig.categoryIcons[categoryId]}));
+            if (category.icon.trim()) {
+                iconMap.set(Number(category.id), new donkeyMapIcon({iconUrl: category.icon}));
             }
         }
 

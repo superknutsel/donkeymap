@@ -635,9 +635,10 @@
     getIconsByCategory() {
       const donkeyMapIcon = this.getDonkeyMapIconType();
       const iconMap = /* @__PURE__ */ new Map();
-      for (let categoryId in this.markerConfig.categoryIcons) {
-        if (this.markerConfig.categoryIcons[categoryId].trim()) {
-          iconMap.set(Number(categoryId), new donkeyMapIcon({ iconUrl: this.markerConfig.categoryIcons[categoryId] }));
+      for (let categoryId in this.markerConfig.categories) {
+        const category = this.markerConfig.categories[categoryId];
+        if (category.icon.trim()) {
+          iconMap.set(Number(category.id), new donkeyMapIcon({ iconUrl: category.icon }));
         }
       }
       return iconMap;

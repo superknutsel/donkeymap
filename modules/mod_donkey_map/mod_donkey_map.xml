@@ -36,7 +36,7 @@
                         type="subform"
                         label="MOD_DONKEY_MAP_FIELD_CATEGORY_MARKERS_LABEL"
                         multiple="true"
-                        layout="joomla.form.field.subform.repeatable-table"
+                        layout="joomla.form.field.subform.repeatable"
                         required="true"
                 >
                     <form>
@@ -53,9 +53,14 @@
                         </field>
 
                         <field
+                                name="alternate_title"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_CATEGORY_ALTERNATE_TITLE_LABEL"
+                        />
+                        <field
                                 name="icon"
                                 type="media"
-                                label="MOD_DONKEY_MAP_FIELD_ICON_LABEL"
+                                label="MOD_DONKEY_MAP_FIELD_CATEGORY_ICON_LABEL"
                                 preview="tooltip"
                                 preview_width="40"
                                 preview_height="40"

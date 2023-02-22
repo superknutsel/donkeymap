@@ -140,10 +140,14 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
      */
     private function getMarkerConfig(array $data): object
     {
-        // Convert category/marker associations to an array containing icon file paths indexed by category id.
-        $categoryMarkerIcons = array_values((array)$data['params']->get('categories', []));
-        $iconsByCatId        = array_reduce($categoryMarkerIcons, function (array $carry, object $categoryMarker) {
-            $carry[(int)$categoryMarker->id[0]] = $categoryMarker->icon ? Uri::root() . $categoryMarker->icon : '';
+        // Convert category/marker associations to an array containing category config objects indexed by category id.
+        $selectedCategories = array_values((array)$data['params']->get('categories', []));
+        $selectedCategoriesById      = array_reduce($selectedCategories, function (array $carry, object $category) {
+            $carry[(int)$category->id[0]] = (object)[
+                'id'             => $category->id[0],
+                'icon'           => $category->icon ? Uri::root() . $category->icon : '',
+                'alternateTitle' => $category->alternate_title ?: '',
+            ];
 
             return $carry;
         }, []);
@@ -159,7 +163,7 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         return (object)[
             'defaultIcon'       => $defaultIcon,
             // Create an array containing category id/icon combination objects.
-            'categoryIcons'     => $iconsByCatId,
+            'categories'        => $selectedCategoriesById,
             'iconConfig'        => (object)[
                 'size'        => (object)[
                     'width'  => (int)$iconSizeParam->width,

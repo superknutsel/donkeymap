@@ -46,6 +46,18 @@ class DonkeyMapHelper implements DatabaseAwareInterface
     {
         $markers = [];
 
+        // Convert category/marker associations to an array containing category config objects indexed by category id.
+        $selectedCategories     = array_values((array)$params->get('categories', []));
+        $selectedCategoriesById = array_reduce($selectedCategories, function (array $carry, object $category) {
+            $carry[(int)$category->id[0]] = (object)[
+                'id'             => $category->id[0],
+                'icon'           => $category->icon ? Uri::root() . $category->icon : '',
+                'alternateTitle' => $category->alternate_title ?: '',
+            ];
+
+            return $carry;
+        }, []);
+
         // Process articles matching any filter setting as configured in the module instance
         // and create marker objects based on their content.
         foreach ($this->getArticles($params, $app) as $article) {
@@ -85,12 +97,13 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 $popupContent .= '<img src="' . Uri::root() . $articleImages->image_intro . '" style="width: 200px;">';
             endif;
 
+            $markerTitle = $selectedCategoriesById[(int)$article->catid]->alternateTitle ?: $article->category_title;
+
             // Accumulate marker data as objects in an array.
             $markers[] = (object)[
-                'category' => [
-                    'id'  => (int)$article->catid,
-                    'title'        => $article->category_title,
-                    'alias'        => $article->category_alias,
+                'category'    => [
+                    'id'    => (int)$article->catid,
+                    'title' => $markerTitle,
                 ],
                 'coordinates' => (object)[
                     'lat'  => (float)$lat,
