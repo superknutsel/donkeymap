@@ -146,7 +146,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         $model->setState('filter.access', $access);
 
         // Category filter
-        $categoryIds = array_map(fn(object $category) => (int)$category->categoryId[0],
+        $categoryIds = array_map(fn(object $category) => (int)$category->id[0],
             array_values((array)$params->get('categories', [])));
         $model->setState('filter.category_id', $categoryIds);
 

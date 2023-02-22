@@ -41,7 +41,7 @@
                 >
                     <form>
                         <field
-                                name="categoryId"
+                                name="id"
                                 type="category"
                                 label="JCATEGORY"
                                 extension="com_content"
@@ -51,6 +51,7 @@
                         >
                             <option value="">JOPTION_SELECT_CATEGORY</option>
                         </field>
+
                         <field
                                 name="icon"
                                 type="media"

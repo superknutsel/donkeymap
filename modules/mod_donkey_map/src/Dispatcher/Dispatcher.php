@@ -143,7 +143,7 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         // Convert category/marker associations to an array containing icon file paths indexed by category id.
         $categoryMarkerIcons = array_values((array)$data['params']->get('categories', []));
         $iconsByCatId        = array_reduce($categoryMarkerIcons, function (array $carry, object $categoryMarker) {
-            $carry[(int)$categoryMarker->categoryId[0]] = $categoryMarker->icon ? Uri::root() . $categoryMarker->icon : '';
+            $carry[(int)$categoryMarker->id[0]] = $categoryMarker->icon ? Uri::root() . $categoryMarker->icon : '';
 
             return $carry;
         }, []);
