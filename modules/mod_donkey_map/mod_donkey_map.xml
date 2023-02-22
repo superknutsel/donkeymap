@@ -174,22 +174,22 @@
 
                 <field
                         name="polygon"
-                        type="filelistupload"
-                        directory="/media/mod_donkey_map/polygons"
-                        label="MOD_DONKEY_MAP_FIELD_MAP_POLYGON_LABEL"
-                        fileFilter="\.json$"
-                        accept=".json, application/json, application/ld+json"
-                        hide_default="true"
-                        validate="ValidPolygonJson"
-                />
-
-                <field
-                        name="polygon_attributes"
                         type="subform"
-                        label="MOD_DONKEY_MAP_FIELD_MAP_POLYGON_ATTRIBUTES_LABEL"
+                        label="MOD_DONKEY_MAP_FIELD_MAP_POLYGON_LABEL"
                         multiple="false"
                 >
                     <form>
+                        <field
+                                name="coordinates"
+                                type="filelistupload"
+                                directory="/media/mod_donkey_map/polygons"
+                                label="MOD_DONKEY_MAP_FIELD_MAP_POLYGON_COORDINATES_LABEL"
+                                fileFilter="\.json$"
+                                accept=".json, application/json, application/ld+json"
+                                hide_default="true"
+                                validate="ValidPolygonJson"
+                        />
+
                         <field
                                 name="color"
                                 type="color"

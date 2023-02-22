@@ -57,20 +57,40 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
     private function getMapConfig(array $data): object
     {
         $mapContainerParam = $data['params']->get('map_container');
-        $mapCenterParam = $data['params']->get('map_center');
+        $mapCenterParam    = $data['params']->get('map_center');
 
         return (object)[
-            'container' => (object)[
+            'container'   => (object)[
                 'width'  => $mapContainerParam->width ?? '',
-                'height' => $mapContainerParam->height ?? ''
+                'height' => $mapContainerParam->height ?? '',
             ],
-            'center'             => (object)[
+            'center'      => (object)[
                 'lat'  => (float)$mapCenterParam->lat,
-                'long' => (float)$mapCenterParam->long
+                'long' => (float)$mapCenterParam->long,
             ],
-            'initialZoom'        => (float)$data['params']->get('initial_zoom'),
-            'polygonCoordinates' => $this->getPolygonCoordinates($data),
-            'polygonAttributes'  => $this->getPolygonAttributes($data),
+            'initialZoom' => (float)$data['params']->get('initial_zoom'),
+            'polygon'     => $this->getPolygonAttributes($data),
+        ];
+    }
+
+    /**
+     * Returns an array containing polygon display style attributes.
+     *
+     * @param   array  $data
+     *
+     * @return object
+     */
+    private function getPolygonAttributes(array $data): object
+    {
+        $param = $data['params']->get('polygon');
+
+        return (object)[
+            'coordinates' => $this->getPolygonCoordinates($data),
+            'color'       => $param->color,
+            'opacity'     => $param->opacity,
+            'weight'      => $param->weight,
+            'fillColor'   => $param->fill_color,
+            'fillOpacity' => $param->fill_opacity,
         ];
     }
 
@@ -87,14 +107,14 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         // Get the file name of a polygon JSON definition, if any.
         $param = $data['params']->get('polygon');
 
-        if ($param === '-1') {
+        if (($param->coordinates ?? '-1') === '-1') {
             return [];
         }
 
         // The file is supposed to be in a sub folder of the module's media folder.
         // We assume the file contains a valid GeoJSON definition of a polygon as
         // can be obtained here: http://polygons.openstreetmap.fr
-        $polygonFile   = JPATH_ROOT . '/media/mod_donkey_map/polygons/' . $param;
+        $polygonFile = JPATH_ROOT . '/media/mod_donkey_map/polygons/' . $param->coordinates;
         // Read the file and convert it into a usable PHP object.
         $polygonJson   = file_get_contents($polygonFile);
         $polygonObject = json_decode($polygonJson);
@@ -109,26 +129,6 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         }
 
         return $coordinates;
-    }
-
-    /**
-     * Returns an array containing polygon display style attributes.
-     *
-     * @param   array  $data
-     *
-     * @return object
-     */
-    private function getPolygonAttributes(array $data): object
-    {
-        $param = $data['params']->get('polygon_attributes');
-
-        return (object) [
-            'color' => $param->color,
-            'opacity' => $param->opacity,
-            'weight' => $param->weight,
-            'fillColor' => $param->fill_color,
-            'fillOpacity' => $param->fill_opacity
-        ];
     }
 
     /**

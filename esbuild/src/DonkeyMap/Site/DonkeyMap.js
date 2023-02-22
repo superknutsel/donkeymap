@@ -113,16 +113,16 @@ export default class DonkeyMap {
     // Add an outline to a designated arrea, using a polygon definition based on latitude/logitude coordinates
     // and provided color attributes.
     addOutline() {
-        if (!this.mapConfig?.polygonCoordinates.length) {
+        if (!this.mapConfig?.polygon?.coordinates.length) {
             return;
         }
 
-        const polygon = L.polygon(this.mapConfig.polygonCoordinates, {
-            color: this.mapConfig?.polygonAttributes?.color.trim() ? this.mapConfig?.polygonAttributes.color : 'rgba(0, 128, 0)',
-            opacity: this.mapConfig?.polygonAttributes?.opacity ? this.mapConfig?.polygonAttributes.opacity : '1.0',
-            weight: this.mapConfig?.polygonAttributes?.weight ? this.mapConfig?.polygonAttributes.weight : '2',
-            fillColor: this.mapConfig?.polygonAttributes?.fillColor.trim() ? this.mapConfig?.polygonAttributes.fillColor : 'rgba(0, 128, 0)',
-            fillOpacity: this.mapConfig?.polygonAttributes?.opacity ? this.mapConfig?.polygonAttributes.fillOpacity : '0.1'
+        const polygon = L.polygon(this.mapConfig.polygon.coordinates, {
+            color: this.mapConfig?.polygon?.color.trim() ? this.mapConfig?.polygon.color : 'rgba(0, 128, 0)',
+            opacity: this.mapConfig?.polygon?.opacity ? this.mapConfig?.polygon.opacity : '1.0',
+            weight: this.mapConfig?.polygon?.weight ? this.mapConfig?.polygon.weight : '2',
+            fillColor: this.mapConfig?.polygon?.fillColor.trim() ? this.mapConfig?.polygon.fillColor : 'rgba(0, 128, 0)',
+            fillOpacity: this.mapConfig?.polygon?.opacity ? this.mapConfig?.polygon.fillOpacity : '0.1'
         }).addTo(this.map);
 
         // Zoom the map to the polygon.

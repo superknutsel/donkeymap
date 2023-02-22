@@ -118,8 +118,8 @@ $attr
 
 $maxSize = Text::sprintf('JGLOBAL_MAXIMUM_UPLOAD_SIZE_LIMIT', HTMLHelper::_('number.bytes', Utility::getMaxUploadSize()));
 
-$uploadId    = str_replace('jform_params_' . $fieldName, 'jform_params_' . $fieldName . '_upload', $id);
-$uploadName  = str_replace('[' . $fieldName . ']', '[' . $fieldName . '_upload]', $name);
+$uploadId    = $id . '_upload';
+$uploadName  = preg_replace('/jform(.*)\[([^]]+)\]/', 'jform$1[$2_upload]', $name);
 $uploadField = "<input type=\"file\" name=\"$uploadName\" id=\"$uploadId\" $attr><br>$maxSize";
 
 $messageContainerId = 'donkeymap-upload-message-container-' . $id;
@@ -166,7 +166,6 @@ $uploadParams = json_encode([
 echo <<<JS
 <script>
     document.addEventListener('DOMContentLoaded', e => {
-        // Obix.DonkeyMapHelper.upload("$id", "$uploadId", "$uploadTriggerId", "$uploadUrl", $uploadParams)
         const uploadHandler = Obix.DonkeyMapHelper.createUploadHandler("$id", "$uploadId", "$uploadTriggerId", "$uploadUrl", $uploadParams);
         
         uploadHandler.setup();
