@@ -1,5 +1,6 @@
-export default class UploadHandler {
+import './uploadlistfield.css';
 
+export default class UploadHandler {
     constructor(listId, uploadId, uploadTriggerId, uploadUrl, params = null) {
         this.listId = listId;
         this.uploadId = uploadId;

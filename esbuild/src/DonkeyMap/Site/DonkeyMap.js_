@@ -1,6 +1,5 @@
 import '../../../node_modules/leaflet/dist/leaflet.css';
-import {Map as LeafletMap, TileLayer, LayerGroup, Marker, Control, Icon, Polygon} from "leaflet";
-import {MarkerClusterGroup} from "leaflet.markercluster";
+import {Map as LeafletMap, TileLayer} from "leaflet";
 
 export default class DonkeyMap {
     // Instantiate object, accepting various map related attributes.
@@ -21,8 +20,8 @@ export default class DonkeyMap {
         // Instantiate the map and attach it to a container, which can be a DOM element or an element id.
         this.map = new LeafletMap(container);
         this.map.setView([this.mapConfig.center.lat, this.mapConfig.center.long], this.mapConfig.initialZoom);
-
         // Add a title layer with some basic attributes.
+
         const tileLayer = new TileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         });
@@ -30,15 +29,13 @@ export default class DonkeyMap {
         tileLayer.addTo(this.map);
 
         // Add a scale control to allow users to manipulate the scale at which the map is displayed.
-        const scale = new Control.Scale();
-
-        scale.addTo(this.map);
+        L.control.scale().addTo(this.map);
 
         // Add markers.
         this.addMarkers();
 
         // Add an outline to a designated map area.
-        this.addOutline();
+        // this.addOutline();
     }
 
     addMarkers() {
@@ -67,7 +64,7 @@ export default class DonkeyMap {
             }
 
             // Create a marker object based on the item's latitude and logitude.
-            const marker = new Marker([item.coordinates.lat, item.coordinates.long], {
+            const marker = L.marker([item.coordinates.lat, item.coordinates.long], {
                 icon: markerIcon
             });
 
@@ -78,7 +75,7 @@ export default class DonkeyMap {
 
             // Create an entry for the current item in the layer groups Map, if no such entry exists yet.
             if (!layerGroups.has(layerName)) {
-                layerGroups.set(layerName, this.markerConfig.clusteringEnabled ? new MarkerClusterGroup() : new LayerGroup());
+                layerGroups.set(layerName, this.markerConfig.clusteringEnabled ? L.markerClusterGroup() : L.layerGroup());
             }
 
             // Add a layer to the layer group, adding the newly created marker object.
@@ -91,9 +88,7 @@ export default class DonkeyMap {
         // Add a control to the map, containing checkboxes the user can use
         // to selectively hide markers based on their category.
 
-        const layers = new Control.Layers({}, Object.fromEntries(layerGroups));
-
-        layers.addTo(this.map);
+        L.control.layers({}, Object.fromEntries(layerGroups)).addTo(this.map);
     }
 
     // Create a Map of icons, accessible by category id.
@@ -118,7 +113,7 @@ export default class DonkeyMap {
 
     // Create an icon with preset attributes for creation of marker objects.
     getDonkeyMapIconType() {
-        return Icon.extend({
+        return L.Icon.extend({
             options: {
                 iconSize: [this.markerConfig.iconConfig.size.width, this.markerConfig.iconConfig.size.height],
                 iconAnchor: [this.markerConfig.iconConfig.anchor.left, this.markerConfig.iconConfig.anchor.top],
@@ -134,15 +129,13 @@ export default class DonkeyMap {
             return;
         }
 
-        const polygon = new Polygon(this.mapConfig.polygon.coordinates, {
+        const polygon = L.polygon(this.mapConfig.polygon.coordinates, {
             color: this.mapConfig?.polygon?.color.trim() ? this.mapConfig?.polygon.color : 'rgba(0, 128, 0)',
             opacity: this.mapConfig?.polygon?.opacity ? this.mapConfig?.polygon.opacity : '1.0',
             weight: this.mapConfig?.polygon?.weight ? this.mapConfig?.polygon.weight : '2',
             fillColor: this.mapConfig?.polygon?.fillColor.trim() ? this.mapConfig?.polygon.fillColor : 'rgba(0, 128, 0)',
             fillOpacity: this.mapConfig?.polygon?.opacity ? this.mapConfig?.polygon.fillOpacity : '0.1'
-        });
-
-        polygon.addTo(this.map);
+        }).addTo(this.map);
 
         // Zoom the map to the polygon.
         this.map.fitBounds(polygon.getBounds());

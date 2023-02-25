@@ -5,11 +5,15 @@ vendor
 *.min.css
 *.zip
 *.js.map
+*.css.map
 *.lock
 *-lock.json
 
 esbuild/dist
 esbuild/node_modules
+
+modules/mod_donkey_map/media/js/*
+modules/mod_donkey_map/media/css/*
 
 packages/*
 !packages/package.sh
