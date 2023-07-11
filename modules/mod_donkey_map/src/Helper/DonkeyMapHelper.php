@@ -97,12 +97,15 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 $popupContent .= '<img src="' . Uri::root() . $articleImages->image_intro . '" style="width: 200px;">';
             endif;
 
-            $markerTitle = $selectedCategoriesById[(int)$article->catid]->alternateTitle ?: $article->category_title;
+            $markerTitle = count($selectedCategoriesById) && array_key_exists((int)$article->catid, $selectedCategoriesById)
+                ? ($selectedCategoriesById[(int)$article->catid]->alternateTitle ?: $article->category_title)
+                : $article->category_title;
 
             // Accumulate marker data as objects in an array.
             $markers[] = (object)[
-                'category'    => [
+                'group'       => [
                     'id'    => (int)$article->catid,
+                    'type'  => 'category',
                     'title' => $markerTitle,
                 ],
                 'coordinates' => (object)[
@@ -162,6 +165,11 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         $categoryIds = array_map(fn(object $category) => (int)$category->id[0],
             array_values((array)$params->get('categories', [])));
         $model->setState('filter.category_id', $categoryIds);
+
+        // Tag filter
+        $tagIds = array_map(fn(object $tag) => (int)$tag->id,
+            array_values((array)$params->get('tags', [])));
+        $model->setState('filter.tag', $tagIds);
 
         // State filter
         $model->setState('filter.condition', 1);
