@@ -177,7 +177,7 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         return (object)[
             'defaultIcon'       => $defaultIcon,
             // Create an array containing category id/icon combination objects.
-            'groups'            => [...$selectedCategoriesById, ...$selectedTagsById],
+            'groups'            => array_merge($selectedCategoriesById, $selectedTagsById),
             'iconConfig'        => (object)[
                 'size'        => (object)[
                     'width'  => (int)$iconSizeParam->width,
