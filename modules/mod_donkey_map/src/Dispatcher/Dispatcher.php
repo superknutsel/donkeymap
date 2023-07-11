@@ -141,8 +141,8 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
     private function getMarkerConfig(array $data): object
     {
         // Convert category/marker associations to an array containing category config objects indexed by category id.
-        $selectedCategories = array_values((array)$data['params']->get('categories', []));
-        $selectedCategoriesById      = array_reduce($selectedCategories, function (array $carry, object $category) {
+        $selectedCategories     = array_values((array)$data['params']->get('categories', []));
+        $selectedCategoriesById = array_reduce($selectedCategories, function (array $carry, object $category) {
             $carry[(int)$category->id[0]] = (object)[
                 'id'             => $category->id[0],
                 'icon'           => $category->icon ? Uri::root() . $category->icon : '',
@@ -163,7 +163,7 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         return (object)[
             'defaultIcon'       => $defaultIcon,
             // Create an array containing category id/icon combination objects.
-            'categories'        => $selectedCategoriesById,
+            'groups'            => $selectedCategoriesById,
             'iconConfig'        => (object)[
                 'size'        => (object)[
                     'width'  => (int)$iconSizeParam->width,

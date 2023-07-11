@@ -55,11 +55,11 @@ export default class DonkeyMap {
         // Process all items in the list of markers.
         this.markerList.forEach(item => {
             // Get the key of the item by which to access the icons Map, making sure it is a Number.
-            const categoryKey = Number(item.category.id);
+            const groupKey = Number(item.group.id);
             // Get the name of the Layer, to be used as the index for the layer groups Map.
-            const layerName = item.category.title;
+            const layerName = item.group.title;
             // Get the item's icon , using the default icon if no such icon exists for the item.
-            const markerIcon = iconsByCategory.has(categoryKey) ? iconsByCategory.get(categoryKey) : defaultIcon;
+            const markerIcon = iconsByCategory.has(groupKey) ? iconsByCategory.get(groupKey) : defaultIcon;
 
             // No item specif icon, nor a default icon, so ther's nothing to display.
             if (!markerIcon) {
@@ -103,8 +103,8 @@ export default class DonkeyMap {
         const iconMap = new Map();
 
         // Process all categories
-        for (let categoryId in this.markerConfig.categories) {
-            const category = this.markerConfig.categories[categoryId];
+        for (let categoryId in this.markerConfig.groups) {
+            const category = this.markerConfig.groups[categoryId];
 
             // If an image is available, create an icon object and add it to the Map,
             // making sure the category id is a Number.

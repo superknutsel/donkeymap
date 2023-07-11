@@ -11477,9 +11477,9 @@
       const iconsByCategory = this.getIconsByCategory();
       const layerGroups = /* @__PURE__ */ new Map();
       this.markerList.forEach((item) => {
-        const categoryKey = Number(item.category.id);
-        const layerName = item.category.title;
-        const markerIcon = iconsByCategory.has(categoryKey) ? iconsByCategory.get(categoryKey) : defaultIcon;
+        const groupKey = Number(item.group.id);
+        const layerName = item.group.title;
+        const markerIcon = iconsByCategory.has(groupKey) ? iconsByCategory.get(groupKey) : defaultIcon;
         if (!markerIcon) {
           return;
         }
@@ -11502,8 +11502,8 @@
     getIconsByCategory() {
       const donkeyMapIcon = this.getDonkeyMapIconType();
       const iconMap = /* @__PURE__ */ new Map();
-      for (let categoryId in this.markerConfig.categories) {
-        const category = this.markerConfig.categories[categoryId];
+      for (let categoryId in this.markerConfig.groups) {
+        const category = this.markerConfig.groups[categoryId];
         if (category.icon.trim()) {
           iconMap.set(Number(category.id), new donkeyMapIcon({ iconUrl: category.icon }));
         }
