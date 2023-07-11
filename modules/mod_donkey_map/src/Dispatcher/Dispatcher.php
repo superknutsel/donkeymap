@@ -191,11 +191,8 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
      */
     private function getMarkerList(array $data): array
     {
-        $helper = $this->getHelperFactory()->getHelper('DonkeyMapHelper');
+        $helper = $this->getHelperFactory()->getHelper('DonkeyMapHelper', ['params' => $data['params']]);
 
-        return $helper->getMarkers(
-            $data['params'],
-            $this->getApplication()
-        );
+        return $helper->getMarkers();
     }
 }
