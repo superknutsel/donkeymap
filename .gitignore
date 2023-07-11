@@ -17,3 +17,5 @@ modules/mod_donkey_map/media/css/*
 
 packages/*
 !packages/package.sh
+
+stuff/*
