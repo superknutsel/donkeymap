@@ -48,18 +48,18 @@ export default class DonkeyMap {
         const defaultIcon = this.markerConfig?.defaultIcon.trim()
             ? new donkeyMapIcon({iconUrl: this.markerConfig?.defaultIcon}) : undefined;
         // Get a Map of icons, accessible by category id.
-        const iconsByCategory = this.getIconsByCategory();
+        const iconsByGroup = this.getIconsByGroup();
         // Collect all markers in layer groups per category.
         const layerGroups = new Map();
 
         // Process all items in the list of markers.
         this.markerList.forEach(item => {
             // Get the key of the item by which to access the icons Map, making sure it is a Number.
-            const groupKey = Number(item.group.id);
+            const groupKey = item.group.type + '.' + item.group.id;
             // Get the name of the Layer, to be used as the index for the layer groups Map.
             const layerName = item.group.title;
             // Get the item's icon , using the default icon if no such icon exists for the item.
-            const markerIcon = iconsByCategory.has(groupKey) ? iconsByCategory.get(groupKey) : defaultIcon;
+            const markerIcon = iconsByGroup.has(groupKey) ? iconsByGroup.get(groupKey) : defaultIcon;
 
             // No item specif icon, nor a default icon, so ther's nothing to display.
             if (!markerIcon) {
@@ -71,7 +71,7 @@ export default class DonkeyMap {
                 icon: markerIcon
             });
 
-            // If the item has popu content, attach it to the marker.
+            // If the item has popup content, attach it to the marker.
             if (item?.popup?.content && item?.popup?.link) {
                 marker.bindPopup('<a href="' + item.popup.link + '">' + item.title + '</a>' + item.popup.content);
             }
@@ -97,19 +97,19 @@ export default class DonkeyMap {
     }
 
     // Create a Map of icons, accessible by category id.
-    getIconsByCategory() {
+    getIconsByGroup() {
         // Get an icon with preset attributes for creation of marker objects.
         const donkeyMapIcon = this.getDonkeyMapIconType();
         const iconMap = new Map();
 
         // Process all categories
-        for (let categoryId in this.markerConfig.groups) {
-            const category = this.markerConfig.groups[categoryId];
+        for (let groupKey in this.markerConfig.groups) {
+            const group = this.markerConfig.groups[groupKey];
 
             // If an image is available, create an icon object and add it to the Map,
             // making sure the category id is a Number.
-            if (category.icon.trim()) {
-                iconMap.set(Number(category.id), new donkeyMapIcon({iconUrl: category.icon}));
+            if (group.icon.trim()) {
+                iconMap.set(groupKey, new donkeyMapIcon({iconUrl: group.icon}));
             }
         }
 

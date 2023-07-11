@@ -34,8 +34,14 @@ class DonkeyMapHelper implements DatabaseAwareInterface
 {
     use DatabaseAwareTrait;
 
+    /**
+     * @var \Joomla\CMS\Application\CMSApplicationInterface|null
+     */
     private CMSApplicationInterface $app;
 
+    /**
+     * @var \Joomla\Registry\Registry|mixed
+     */
     private Registry $params;
 
     /**
@@ -119,9 +125,10 @@ class DonkeyMapHelper implements DatabaseAwareInterface
 
             // Accumulate marker data as objects in an array.
             $markers[] = (object)[
+                'id' => (int)$article->id,
                 'group'       => [
-                    'id'    => (int)$article->catid,
-                    'type'  => 'category',
+                    'id'    => (int)$article->markerTypeId,
+                    'type'  => $article->markerType,
                     'title' => $markerTitle,
                 ],
                 'coordinates' => (object)[
@@ -136,23 +143,127 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             ];
         }
 
+        $a[] = array_map(fn(object $a) => ['id' => $a->id, 'type' => $a->group['type']], $markers);
+
+        usort($markers, function (object $a, object $b) {
+            // In case of two different articles, order by article id.
+            if ($a->id !== $b->id) {
+                return $a->id <=> $b->id;
+            }
+
+            // Otherwise order by type priority: category/tag(/single article)
+            return $a->group['type'] === 'category' ? -1 : 1;
+        });
+
+        $a[] = array_map(fn(object $a) => ['id' => $a->id, 'type' => $a->group['type']], $markers);
+
+        $markers = array_reduce($markers, function (array $carry, object $item) {
+            if (!isset($carry[$item->id])) {
+                $carry[$item->id] = $item;
+            }
+
+            return $carry;
+        }, []);
+
+        $a[] = array_map(fn(object $a) => ['id' => $a->id, 'type' => $a->group['type']], $markers);
+
+        $markers = array_values($markers);
+
+        $a[] = array_map(fn(object $a) => ['id' => $a->id, 'type' => $a->group['type']], $markers);
+
         return $markers;
     }
 
     /**
      * Retrieve a list of article, filtered by attributes as configured for the module instance.
      *
-     * @param   Registry       $params  The module parameters.
-     * @param   ArticlesModel  $model   The model.
-     *
-     * @return  array
+     * @return  \Generator
      */
     public function getArticles(): \Generator
     {
-        // Get the Dbo and User object
-        $db   = $this->getDatabase();
+        // Category filter
+        $markerCategoryIds = array_map(fn(object $category) => (int)$category->id[0],
+            array_values((array)$this->params->get('categories', [])));
+
+        if (count($markerCategoryIds)) {
+            $model = $this->getArticlesModel();
+            // For this query we don't need tag data
+            $model->setState('load_tags', false);
+
+            foreach ($this->getFilteredArticles($model, ['filter.category_id' => $markerCategoryIds]) as $article) {
+                $article = (array)$article;
+
+                $article['markerType'] = 'category';
+                $article['markerTypeId'] = (int)$article['catid'];
+
+                yield (object)$article;
+            }
+        }
+
+        // Tag filter
+        $markerTagIds = array_map(fn(object $tag) => (int)$tag->id,
+            array_values((array)$this->params->get('tags', [])));
+
+        if (count($markerTagIds)) {
+            $model = $this->getArticlesModel();
+            // For this query we do need tag data
+            $model->setState('load_tags', true);
+
+            foreach ($this->getFilteredArticles($model, ['filter.tag' => $markerTagIds]) as $article) {
+                $articleTagIds = array_map(fn(object $tag) => (int) $tag->id, $article->tags->itemTags);
+                $tagIds = array_values(array_intersect($markerTagIds, $articleTagIds));
+
+                $article = (array)$article;
+
+                $article['markerType'] = 'tag';
+                // Use first tag if multiple tags apply.
+                $article['markerTypeId'] = $tagIds[0];
+
+                yield (object)$article;
+            }
+        }
+    }
+
+    /**
+     * Retrieve a list of article, filtered by attributes passed in the argument.
+     *
+     * @param   array  $filters
+     *
+     * @return \Generator
+     */
+    public function getFilteredArticles(ArticlesModel $model, array $filters = []): \Generator
+    {
+        foreach ($filters as $attribute => $values) {
+            $model->setState($attribute, $values);
+        }
+
         $user = $this->app->getIdentity();
 
+        // Authotisation and acces permission.
+        $access     = !ComponentHelper::getParams('com_content')->get('show_noauth');
+        $authorised = Access::getAuthorisedViewLevels($user->id);
+
+        foreach ($model->getItems() as $item) {
+            $item->slug = $item->id . ':' . $item->alias;
+
+            if ($access || \in_array($item->access, $authorised)) {
+                // We know that user has the privilege to view the article
+                $item->link = Route::_(RouteHelper::getArticleRoute($item->slug, $item->catid, $item->language));
+            } else {
+                $item->link = Route::_('index.php?option=com_users&view=login');
+            }
+
+            yield $item;
+        }
+    }
+
+    /**
+     * Returns a core Joomla! ArticlesModel with its state set based on several module parameters.
+     *
+     * @return \Joomla\Component\Content\Site\Model\ArticlesModel
+     */
+    public function getArticlesModel(): ArticlesModel
+    {
         /** @var ArticlesModel $model */
         $model = $this->app->bootComponent('com_content')->getMVCFactory()->createModel(
             'Articles',
@@ -169,29 +280,15 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         // Set the filters based on the module params
         $model->setState('list.limit', (int)$this->params->get('count', 5));
 
-        // This module does not use tags data
-        $model->setState('load_tags', false);
-
         // Access filter
         $access     = !ComponentHelper::getParams('com_content')->get('show_noauth');
-        $authorised = Access::getAuthorisedViewLevels($user->get('id'));
         $model->setState('filter.access', $access);
-
-        // Category filter
-        $categoryIds = array_map(fn(object $category) => (int)$category->id[0],
-            array_values((array)$this->params->get('categories', [])));
-        $model->setState('filter.category_id', $categoryIds);
-
-        // Tag filter
-        $tagIds = array_map(fn(object $tag) => (int)$tag->id,
-            array_values((array)$this->params->get('tags', [])));
-        $model->setState('filter.tag', $tagIds);
 
         // State filter
         $model->setState('filter.condition', 1);
 
         // User filter
-        $userId = $user->get('id');
+        $userId = $this->app->getIdentity()->id;
 
         switch ($this->params->get('user_id')) {
             case 'by_me':
@@ -228,206 +325,6 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             $model->setState('filter.featured', 'hide');
         }
 
-        foreach ($model->getItems() as $item) {
-            $item->slug = $item->id . ':' . $item->alias;
-
-            if ($access || \in_array($item->access, $authorised)) {
-                // We know that user has the privilege to view the article
-                $item->link = Route::_(RouteHelper::getArticleRoute($item->slug, $item->catid, $item->language));
-            } else {
-                $item->link = Route::_('index.php?option=com_users&view=login');
-            }
-
-            yield $item;
-        }
+        return $model;
     }
-
-    //    public function getFilteredArticles(Registry $params, SiteApplication $app): \Generator
-    //    {
-    //        // Get the Dbo and User object
-    //        $db   = $this->getDatabase();
-    //        $user = $app->getIdentity();
-    //
-    //        /** @var ArticlesModel $model */
-    //        $model = $app->bootComponent('com_content')->getMVCFactory()->createModel(
-    //            'Articles',
-    //            'Site',
-    //            ['ignore_request' => true]
-    //        );
-    //
-    //        // Set application parameters in model
-    //        $model->setState('params', $app->getParams());
-    //
-    //        $model->setState('list.start', 0);
-    //        $model->setState('filter.published', 1);
-    //
-    //        // Set the filters based on the module params
-    //        $model->setState('list.limit', (int)$params->get('count', 5));
-    //
-    //        // This module does not use tags data
-    //        $model->setState('load_tags', false);
-    //
-    //        // Access filter
-    //        $access     = !ComponentHelper::getParams('com_content')->get('show_noauth');
-    //        $authorised = Access::getAuthorisedViewLevels($user->get('id'));
-    //        $model->setState('filter.access', $access);
-    //
-    //        // Category filter
-    //        $categoryIds = array_map(fn(object $category) => (int)$category->id[0],
-    //            array_values((array)$params->get('categories', [])));
-    //        $model->setState('filter.category_id', $categoryIds);
-    //
-    //        // Tag filter
-    //        $tagIds = array_map(fn(object $tag) => (int)$tag->id,
-    //            array_values((array)$params->get('tags', [])));
-    //        $model->setState('filter.tag', $tagIds);
-    //
-    //        // State filter
-    //        $model->setState('filter.condition', 1);
-    //
-    //        // User filter
-    //        $userId = $user->get('id');
-    //
-    //        switch ($params->get('user_id')) {
-    //            case 'by_me':
-    //                $model->setState('filter.author_id', (int)$userId);
-    //                break;
-    //            case 'not_me':
-    //                $model->setState('filter.author_id', $userId);
-    //                $model->setState('filter.author_id.include', false);
-    //                break;
-    //
-    //            case 'created_by':
-    //                $model->setState('filter.author_id', $params->get('author', []));
-    //                break;
-    //
-    //            case '0':
-    //                break;
-    //
-    //            default:
-    //                $model->setState('filter.author_id', (int)$params->get('user_id'));
-    //                break;
-    //        }
-    //
-    //        // Filter by language
-    //        $model->setState('filter.language', $app->getLanguageFilter());
-    //
-    //        // Featured switch
-    //        $featured = $params->get('show_featured', '');
-    //
-    //        if ($featured === '') {
-    //            $model->setState('filter.featured', 'show');
-    //        } elseif ($featured) {
-    //            $model->setState('filter.featured', 'only');
-    //        } else {
-    //            $model->setState('filter.featured', 'hide');
-    //        }
-    //
-    //        foreach ($model->getItems() as $item) {
-    //            $item->slug = $item->id . ':' . $item->alias;
-    //
-    //            if ($access || \in_array($item->access, $authorised)) {
-    //                // We know that user has the privilege to view the article
-    //                $item->link = Route::_(RouteHelper::getArticleRoute($item->slug, $item->catid, $item->language));
-    //            } else {
-    //                $item->link = Route::_('index.php?option=com_users&view=login');
-    //            }
-    //
-    //            yield $item;
-    //        }
-    //    }
-    //
-    //    public function getArticlesModel(Registry $params, SiteApplication $app): ArticlesModel
-    //    {
-    //        // Get the User object
-    //        $user = $app->getIdentity();
-    //
-    //        /** @var ArticlesModel $model */
-    //        $model = $app->bootComponent('com_content')->getMVCFactory()->createModel(
-    //            'Articles',
-    //            'Site',
-    //            ['ignore_request' => true]
-    //        );
-    //
-    //        // Set application parameters in model
-    //        $model->setState('params', $app->getParams());
-    //
-    //        $model->setState('list.start', 0);
-    //        $model->setState('filter.published', 1);
-    //
-    //        // Set the filters based on the module params
-    //        $model->setState('list.limit', (int)$params->get('count', 5));
-    //
-    //        // This module does not use tags data
-    //        $model->setState('load_tags', false);
-    //
-    //        // Access filter
-    //        $access     = !ComponentHelper::getParams('com_content')->get('show_noauth');
-    //        $authorised = Access::getAuthorisedViewLevels($user->get('id'));
-    //        $model->setState('filter.access', $access);
-    //
-    //        // Category filter
-    //        $categoryIds = array_map(fn(object $category) => (int)$category->id[0],
-    //            array_values((array)$params->get('categories', [])));
-    //        $model->setState('filter.category_id', $categoryIds);
-    //
-    //        // Tag filter
-    //        $tagIds = array_map(fn(object $tag) => (int)$tag->id,
-    //            array_values((array)$params->get('tags', [])));
-    //        $model->setState('filter.tag', $tagIds);
-    //
-    //        // State filter
-    //        $model->setState('filter.condition', 1);
-    //
-    //        // User filter
-    //        $userId = $user->get('id');
-    //
-    //        switch ($params->get('user_id')) {
-    //            case 'by_me':
-    //                $model->setState('filter.author_id', (int)$userId);
-    //                break;
-    //            case 'not_me':
-    //                $model->setState('filter.author_id', $userId);
-    //                $model->setState('filter.author_id.include', false);
-    //                break;
-    //
-    //            case 'created_by':
-    //                $model->setState('filter.author_id', $params->get('author', []));
-    //                break;
-    //
-    //            case '0':
-    //                break;
-    //
-    //            default:
-    //                $model->setState('filter.author_id', (int)$params->get('user_id'));
-    //                break;
-    //        }
-    //
-    //        // Filter by language
-    //        $model->setState('filter.language', $app->getLanguageFilter());
-    //
-    //        // Featured switch
-    //        $featured = $params->get('show_featured', '');
-    //
-    //        if ($featured === '') {
-    //            $model->setState('filter.featured', 'show');
-    //        } elseif ($featured) {
-    //            $model->setState('filter.featured', 'only');
-    //        } else {
-    //            $model->setState('filter.featured', 'hide');
-    //        }
-    //
-    //        foreach ($model->getItems() as $item) {
-    //            $item->slug = $item->id . ':' . $item->alias;
-    //
-    //            if ($access || \in_array($item->access, $authorised)) {
-    //                // We know that user has the privilege to view the article
-    //                $item->link = Route::_(RouteHelper::getArticleRoute($item->slug, $item->catid, $item->language));
-    //            } else {
-    //                $item->link = Route::_('index.php?option=com_users&view=login');
-    //            }
-    //
-    //            yield $item;
-    //        }
-    //    }
 }

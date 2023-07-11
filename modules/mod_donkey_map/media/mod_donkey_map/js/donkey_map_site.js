@@ -11474,12 +11474,12 @@
     addMarkers() {
       const donkeyMapIcon = this.getDonkeyMapIconType();
       const defaultIcon = this.markerConfig?.defaultIcon.trim() ? new donkeyMapIcon({ iconUrl: this.markerConfig?.defaultIcon }) : void 0;
-      const iconsByCategory = this.getIconsByCategory();
+      const iconsByGroup = this.getIconsByGroup();
       const layerGroups = /* @__PURE__ */ new Map();
       this.markerList.forEach((item) => {
-        const groupKey = Number(item.group.id);
+        const groupKey = item.group.type + "." + item.group.id;
         const layerName = item.group.title;
-        const markerIcon = iconsByCategory.has(groupKey) ? iconsByCategory.get(groupKey) : defaultIcon;
+        const markerIcon = iconsByGroup.has(groupKey) ? iconsByGroup.get(groupKey) : defaultIcon;
         if (!markerIcon) {
           return;
         }
@@ -11499,13 +11499,13 @@
       layers.addTo(this.map);
     }
     // Create a Map of icons, accessible by category id.
-    getIconsByCategory() {
+    getIconsByGroup() {
       const donkeyMapIcon = this.getDonkeyMapIconType();
       const iconMap = /* @__PURE__ */ new Map();
-      for (let categoryId in this.markerConfig.groups) {
-        const category = this.markerConfig.groups[categoryId];
-        if (category.icon.trim()) {
-          iconMap.set(Number(category.id), new donkeyMapIcon({ iconUrl: category.icon }));
+      for (let groupKey in this.markerConfig.groups) {
+        const group = this.markerConfig.groups[groupKey];
+        if (group.icon.trim()) {
+          iconMap.set(groupKey, new donkeyMapIcon({ iconUrl: group.icon }));
         }
       }
       return iconMap;
