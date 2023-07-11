@@ -32,43 +32,6 @@
         <fields name="params">
             <fieldset name="basic">
                 <field
-                        name="categories"
-                        type="subform"
-                        label="MOD_DONKEY_MAP_FIELD_CATEGORY_MARKERS_LABEL"
-                        multiple="true"
-                        layout="joomla.form.field.subform.repeatable"
-                        required="true"
-                >
-                    <form>
-                        <field
-                                name="id"
-                                type="category"
-                                label="JCATEGORY"
-                                extension="com_content"
-                                layout="joomla.form.field.list-fancy-select"
-                                filter="intarray"
-                                required="true"
-                        >
-                            <option value="">JOPTION_SELECT_CATEGORY</option>
-                        </field>
-
-                        <field
-                                name="alternate_title"
-                                type="text"
-                                label="MOD_DONKEY_MAP_FIELD_CATEGORY_ALTERNATE_TITLE_LABEL"
-                        />
-                        <field
-                                name="icon"
-                                type="media"
-                                label="MOD_DONKEY_MAP_FIELD_CATEGORY_ICON_LABEL"
-                                preview="tooltip"
-                                preview_width="40"
-                                preview_height="40"
-                        />
-                    </form>
-                </field>
-
-                <field
                         name="count"
                         type="number"
                         label="MOD_DONKEY_MAP_FIELD_COUNT_LABEL"
@@ -112,6 +75,83 @@
                         layout="joomla.form.field.list-fancy-select"
                         showon="user_id:created_by"
                 />
+            </fieldset>
+
+            <fieldset name="category_markers">
+                <field
+                        name="categories"
+                        type="subform"
+                        label="MOD_DONKEY_MAP_FIELD_CATEGORY_MARKERS_LABEL"
+                        multiple="true"
+                        layout="joomla.form.field.subform.repeatable"
+                        required="true"
+                >
+                    <form>
+                        <field
+                                name="id"
+                                type="category"
+                                label="JCATEGORY"
+                                extension="com_content"
+                                layout="joomla.form.field.list-fancy-select"
+                                filter="intarray"
+                                required="true"
+                        >
+                            <option value="">JOPTION_SELECT_CATEGORY</option>
+                        </field>
+
+                        <field
+                                name="alternate_title"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_ALTERNATE_TITLE_LABEL"
+                        />
+                        <field
+                                name="icon"
+                                type="media"
+                                label="MOD_DONKEY_MAP_FIELD_ICON_LABEL"
+                                preview="tooltip"
+                                preview_width="40"
+                                preview_height="40"
+                        />
+                    </form>
+                </field>
+            </fieldset>
+
+            <fieldset name="tag_markers">
+                <field
+                        name="tags"
+                        type="subform"
+                        label="MOD_DONKEY_MAP_FIELD_TAG_MARKERS_LABEL"
+                        multiple="true"
+                        layout="joomla.form.field.subform.repeatable"
+                        required="true"
+                >
+                    <form>
+                        <field
+                                name="id"
+                                type="tag"
+                                label="JTAG"
+                                extension="com_content"
+                                layout="joomla.form.field.list-fancy-select"
+                                required="true"
+                        >
+                            <option value="">JOPTION_SELECT_TAG</option>
+                        </field>
+
+                        <field
+                                name="alternate_title"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_ALTERNATE_TITLE_LABEL"
+                        />
+                        <field
+                                name="icon"
+                                type="media"
+                                label="MOD_DONKEY_MAP_FIELD_ICON_LABEL"
+                                preview="tooltip"
+                                preview_width="40"
+                                preview_height="40"
+                        />
+                    </form>
+                </field>
             </fieldset>
 
             <fieldset
