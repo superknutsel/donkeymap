@@ -54,7 +54,6 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         $this->app = Factory::getApplication();
     }
 
-
     /**
      * Returns an array containing marker definitions based on content of regular Joomla! articles.
      *
@@ -95,20 +94,13 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 continue;
             }
 
-            // Extract and decode de the field value.
-            $rawFieldValue = json_decode($fieldsByName['location']->rawvalue);
-
-            // Obtain the location's coordinates,
-            $coordinates = trim($rawFieldValue->coordinates);
-
-            // Check if we have coordinates. Without them, we're done.
-            if (!$coordinates) {
+            if (!($coordinates = $this->extractLatLon($fieldsByName['location']))) {
                 continue;
             }
 
             // Split coordinates into separate latitude and longitude values.
             // TODO: validate and handle invalid input.
-            [$lat, $long] = explode(',', $coordinates);
+            [$lat, $long] = $coordinates;
 
             // Extract and decode the article's image data.
             $articleImages = json_decode($article->images);
@@ -172,6 +164,51 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         $a[] = array_map(fn(object $a) => ['id' => $a->id, 'type' => $a->group['type']], $markers);
 
         return $markers;
+    }
+
+    private function extractLatLon(object $locationField): ?array
+    {
+        // Extract and decode de the field value.
+        if (empty($rawFieldValue =$locationField->rawvalue)) {
+            return null;
+        }
+
+        // Assume core Joomla! text or YOOtheme Location
+        if ($locationField->type === 'text' || $locationField->type === 'location') {
+            return explode(',', $rawFieldValue);
+        }
+
+        // Tassos ACF - OpenStreetMap
+        if ($locationField->type === 'acfosm') {
+            // Decode JSON value.
+            if (($rawFieldValue = json_decode($rawFieldValue)) === null) {
+                return null;
+            }
+
+            // Check if the decoded has has a coordinates property.
+            if (!($coordinates = trim($rawFieldValue?->coordinates ?: ''))) {
+                return null;
+            }
+
+            return explode(',', $coordinates);
+        }
+
+        // Tassos ACF - Map
+        if ($locationField->type === 'acfmap') {
+            // Decode JSON value.
+            if (($rawFieldValue = json_decode($rawFieldValue)) === null) {
+                return null;
+            }
+
+            // Check if the decoded has has a coordinates property.
+            if (!(($latitude = trim($rawFieldValue?->add_marker?->latitude ?: '')) && ($longitude = trim($rawFieldValue?->add_marker?->longitude ?: '')))) {
+                return null;
+            }
+
+            return [$latitude, $longitude];
+        }
+
+        return null;
     }
 
     /**
