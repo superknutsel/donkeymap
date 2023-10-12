@@ -169,24 +169,24 @@ class DonkeyMapHelper implements DatabaseAwareInterface
     private function extractLatLon(object $locationField): ?array
     {
         // Extract and decode de the field value.
-        if (empty($rawFieldValue =$locationField->rawvalue)) {
+        if (empty($rawValue = $locationField->rawvalue)) {
             return null;
         }
 
         // Assume core Joomla! text or YOOtheme Location
         if ($locationField->type === 'text' || $locationField->type === 'location') {
-            return explode(',', $rawFieldValue);
+            return explode(',', $rawValue);
         }
 
         // Tassos ACF - OpenStreetMap
         if ($locationField->type === 'acfosm') {
             // Decode JSON value.
-            if (($rawFieldValue = json_decode($rawFieldValue)) === null) {
+            if (($rawValue = json_decode($rawValue)) === null) {
                 return null;
             }
 
             // Check if the decoded has has a coordinates property.
-            if (!($coordinates = trim($rawFieldValue?->coordinates ?: ''))) {
+            if (!($coordinates = trim($rawValue?->coordinates ?: ''))) {
                 return null;
             }
 
@@ -196,12 +196,17 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         // Tassos ACF - Map
         if ($locationField->type === 'acfmap') {
             // Decode JSON value.
-            if (($rawFieldValue = json_decode($rawFieldValue)) === null) {
+            if (($rawValueObject = json_decode($rawValue)) === null) {
+                return null;
+            }
+
+            // Decode markers
+            if (($markerObjects = json_decode($rawValueObject?->markers)) === null) {
                 return null;
             }
 
             // Check if the decoded has has a coordinates property.
-            if (!(($latitude = trim($rawFieldValue?->add_marker?->latitude ?: '')) && ($longitude = trim($rawFieldValue?->add_marker?->longitude ?: '')))) {
+            if (!(($latitude = trim($markerObjects[0]?->latitude ?: '')) && ($longitude = trim($markerObjects[0]?->longitude ?: '')))) {
                 return null;
             }
 
