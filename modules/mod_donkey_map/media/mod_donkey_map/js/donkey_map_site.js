@@ -11452,11 +11452,15 @@
   var import_leaflet2 = __toESM(require_leaflet_src(), 1);
   var import_leaflet3 = __toESM(require_leaflet_markercluster_src(), 1);
   var DonkeyMap = class {
+    customHandlers = null;
     // Instantiate object, accepting various map related attributes.
     constructor(mapConfig, markerConfig, markerList) {
       this.mapConfig = mapConfig;
       this.markerConfig = markerConfig;
       this.markerList = markerList;
+    }
+    addCustomHandlers(handlers) {
+      this.customHandlers = handlers;
     }
     // Instantiate a Leaflet map, attaching it to a DOM element.
     attach(container) {
@@ -11488,6 +11492,11 @@
         });
         if (item?.popup?.content && item?.popup?.link) {
           marker.bindPopup('<a href="' + item.popup.link + '">' + item.title + "</a>" + item.popup.content);
+          if (this.customHandlers && this.customHandlers.hasOwnProperty("marker")) {
+            Object.entries(this.customHandlers.marker).forEach(([eventName, handler]) => {
+              marker.addEventListener(eventName, handler);
+            });
+          }
         }
         if (!layerGroups.has(layerName)) {
           layerGroups.set(layerName, this.markerConfig.clusteringEnabled ? new import_leaflet3.MarkerClusterGroup() : new import_leaflet2.LayerGroup());

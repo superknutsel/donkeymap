@@ -3,6 +3,8 @@ import {Map as LeafletMap, TileLayer, LayerGroup, Marker, Control, Icon, Polygon
 import {MarkerClusterGroup} from "leaflet.markercluster";
 
 export default class DonkeyMap {
+    customHandlers = null;
+
     // Instantiate object, accepting various map related attributes.
     constructor(mapConfig, markerConfig, markerList) {
         // No idea how to make the clustering plugin available otherwise.
@@ -14,6 +16,10 @@ export default class DonkeyMap {
         this.markerConfig = markerConfig;
         // A list of markers to be displayed on the map.
         this.markerList = markerList;
+    }
+
+    addCustomHandlers(handlers) {
+        this.customHandlers = handlers;
     }
 
     // Instantiate a Leaflet map, attaching it to a DOM element.
@@ -74,6 +80,12 @@ export default class DonkeyMap {
             // If the item has popup content, attach it to the marker.
             if (item?.popup?.content && item?.popup?.link) {
                 marker.bindPopup('<a href="' + item.popup.link + '">' + item.title + '</a>' + item.popup.content);
+
+                if (this.customHandlers && this.customHandlers.hasOwnProperty('marker')) {
+                    Object.entries(this.customHandlers.marker).forEach(([eventName, handler]) => {
+                        marker.addEventListener(eventName, handler);
+                    });
+                }
             }
 
             // Create an entry for the current item in the layer groups Map, if no such entry exists yet.

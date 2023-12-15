@@ -13,6 +13,7 @@ use Joomla\CMS\Access\Access;
 use Joomla\CMS\Application\CMSApplicationInterface;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Component\Content\Site\Helper\RouteHelper;
@@ -20,6 +21,7 @@ use Joomla\Component\Content\Site\Model\ArticlesModel;
 use Joomla\Component\Fields\Administrator\Helper\FieldsHelper;
 use Joomla\Database\DatabaseAwareInterface;
 use Joomla\Database\DatabaseAwareTrait;
+use Joomla\Event\Event;
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 
@@ -45,7 +47,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
     private Registry $params;
 
     /**
-     * @param   \Joomla\CMS\Application\SiteApplication  $app
+     * @param \Joomla\CMS\Application\SiteApplication $app
      */
     public function __construct(array $config = [])
     {
@@ -57,8 +59,8 @@ class DonkeyMapHelper implements DatabaseAwareInterface
     /**
      * Returns an array containing marker definitions based on content of regular Joomla! articles.
      *
-     * @param   \Joomla\Registry\Registry                $params
-     * @param   \Joomla\CMS\Application\SiteApplication  $app
+     * @param \Joomla\Registry\Registry $params
+     * @param \Joomla\CMS\Application\SiteApplication $app
      *
      * @return array
      * @throws \Exception
@@ -68,30 +70,56 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         $markers = [];
 
         // Convert category/marker associations to an array containing category config objects indexed by category id.
-        $selectedCategories     = array_values((array)$this->params->get('categories', []));
+        $selectedCategories = array_values((array)$this->params->get('categories', []));
         $selectedCategoriesById = array_reduce($selectedCategories, function (array $carry, object $category) {
             $carry[(int)$category->id[0]] = (object)[
-                'id'             => $category->id[0],
-                'icon'           => $category->icon ? Uri::root() . $category->icon : '',
+                'id' => $category->id[0],
+                'icon' => $category->icon ? Uri::root() . $category->icon : '',
                 'alternateTitle' => $category->alternate_title ?: '',
             ];
 
             return $carry;
         }, []);
 
+        if ($prepareContent = (int)$this->params->get('prepare_content', 1)) {
+            PluginHelper::importPlugin('content');
+        }
+
         // Process articles matching any filter setting as configured in the module instance
         // and create marker objects based on their content.
         foreach ($this->getArticles($this->params, $this->app) as $article) {
             // Get article's custom fields.
-            $fields = FieldsHelper::getFields('com_content.article', $article, true);
+            $article->jcfields = FieldsHelper::getFields('com_content.article', $article, true);
+
             // Make custom field's accessible by name.
-            $fieldsByName = ArrayHelper::pivot($fields, 'name');
+            $fieldsByName = ArrayHelper::pivot($article?->jcfields ?? [], 'name');
 
             // The article is supposed to have a custom field named "location" of type input[type=text],
             // which must contain a pair of numeric coordinates formatted as: lat,long.
             // E.g.: 54.12995696954786,-2.4445791703280912
             if (!isset($fieldsByName['location'])) {
                 continue;
+            }
+
+            if ($prepareContent) {
+                if ((int)$article->params->get('show_intro', 1) === 1) {
+                    $article->text = $article->introtext . ' ' . $article->fulltext;
+                } elseif ($article->fulltext) {
+                    $article->text = $article->fulltext;
+                } else {
+                    $article->text = $article->introtext;
+                }
+
+                $eventArguments = [
+                    'com_content.article',
+                    $article,
+                    $article->params,
+                    0
+                ];
+                Factory::getApplication()->getDispatcher()->dispatch(
+                    'onContentPrepare',
+                    new Event('onContentPrepare', $eventArguments)
+                );
             }
 
             if (!($coordinates = $this->extractLatLon($fieldsByName['location']))) {
@@ -111,26 +139,29 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 $popupContent .= '<img src="' . Uri::root() . $articleImages->image_intro . '" style="width: 200px;">';
             endif;
 
-            $markerTitle = count($selectedCategoriesById) && array_key_exists((int)$article->catid, $selectedCategoriesById)
+            $markerTitle = count($selectedCategoriesById) && array_key_exists(
+                (int)$article->catid,
+                $selectedCategoriesById
+            )
                 ? ($selectedCategoriesById[(int)$article->catid]->alternateTitle ?: $article->category_title)
                 : $article->category_title;
 
             // Accumulate marker data as objects in an array.
             $markers[] = (object)[
                 'id' => (int)$article->id,
-                'group'       => [
-                    'id'    => (int)$article->markerTypeId,
-                    'type'  => $article->markerType,
+                'group' => [
+                    'id' => (int)$article->markerTypeId,
+                    'type' => $article->markerType,
                     'title' => $markerTitle,
                 ],
                 'coordinates' => (object)[
-                    'lat'  => (float)$lat,
+                    'lat' => (float)$lat,
                     'long' => (float)$long,
                 ],
-                'title'       => $article->title,
-                'popup'       => (object)[
+                'title' => $article->title,
+                'popup' => (object)[
                     'content' => trim($popupContent),
-                    'link'    => trim($article->link),
+                    'link' => trim($article->link),
                 ],
             ];
         }
@@ -206,7 +237,9 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             }
 
             // Check if the decoded has has a coordinates property.
-            if (!(($latitude = trim($markerObjects[0]?->latitude ?: '')) && ($longitude = trim($markerObjects[0]?->longitude ?: '')))) {
+            if (!(($latitude = trim($markerObjects[0]?->latitude ?: '')) && ($longitude = trim(
+                    $markerObjects[0]?->longitude ?: ''
+                )))) {
                 return null;
             }
 
@@ -252,7 +285,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             $model->setState('load_tags', true);
 
             foreach ($this->getFilteredArticles($model, ['filter.tag' => $markerTagIds]) as $article) {
-                $articleTagIds = array_map(fn(object $tag) => (int) $tag->id, $article->tags->itemTags);
+                $articleTagIds = array_map(fn(object $tag) => (int)$tag->id, $article->tags->itemTags);
                 $tagIds = array_values(array_intersect($markerTagIds, $articleTagIds));
 
                 $article = (array)$article;
@@ -269,7 +302,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
     /**
      * Retrieve a list of article, filtered by attributes passed in the argument.
      *
-     * @param   array  $filters
+     * @param array $filters
      *
      * @return \Generator
      */
@@ -282,7 +315,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         $user = $this->app->getIdentity();
 
         // Authotisation and acces permission.
-        $access     = !ComponentHelper::getParams('com_content')->get('show_noauth');
+        $access = !ComponentHelper::getParams('com_content')->get('show_noauth');
         $authorised = Access::getAuthorisedViewLevels($user->id);
 
         foreach ($model->getItems() as $item) {
@@ -323,7 +356,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         $model->setState('list.limit', (int)$this->params->get('count', 5));
 
         // Access filter
-        $access     = !ComponentHelper::getParams('com_content')->get('show_noauth');
+        $access = !ComponentHelper::getParams('com_content')->get('show_noauth');
         $model->setState('filter.access', $access);
 
         // State filter
