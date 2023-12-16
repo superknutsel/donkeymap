@@ -231,9 +231,13 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 return null;
             }
 
-            // Decode markers
-            if (($markerObjects = json_decode($rawValueObject?->markers)) === null) {
-                return null;
+            if (is_object($rawValueObject)) {
+                // Decode markers
+                if (($markerObjects = json_decode($rawValueObject?->markers)) === null) {
+                    return null;
+                }
+            } elseif (is_array($rawValueObject)) {
+                $markerObjects = $rawValueObject;
             }
 
             // Check if the decoded has has a coordinates property.
