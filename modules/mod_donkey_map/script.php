@@ -23,18 +23,8 @@ use Joomla\CMS\Installer\InstallerAdapter;
  */
 class mod_donkey_mapInstallerScript
 {
-
-	/**
-	 * Constructor
-	 *
-	 * @param   InstallerAdapter  $adapter  The object responsible for running
-	 *                                      this script
-	 */
-	public function __construct(InstallerAdapter $adapter)
-	{
-        $this->minimumJoomla = '4.0';
-        $this->minimumPhp = '8.0';
-	}
+    protected string $minimumJoomla = '4.0';
+    protected string $minimumPhp = '8.0';
 
 	/**
 	 * Called after any type of action
