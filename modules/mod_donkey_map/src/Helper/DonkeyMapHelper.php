@@ -9,6 +9,8 @@
 
 namespace Joomla\Module\DonkeyMap\Site\Helper;
 
+\defined('_JEXEC') or die;
+
 use Joomla\CMS\Access\Access;
 use Joomla\CMS\Application\CMSApplicationInterface;
 use Joomla\CMS\Component\ComponentHelper;
@@ -21,11 +23,9 @@ use Joomla\Component\Content\Site\Model\ArticlesModel;
 use Joomla\Component\Fields\Administrator\Helper\FieldsHelper;
 use Joomla\Database\DatabaseAwareInterface;
 use Joomla\Database\DatabaseAwareTrait;
-use Joomla\Event\Event;
+use Joomla\CMS\Event\Content\ContentPrepareEvent;
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
-
-\defined('_JEXEC') or die;
 
 /**
  * General helper for mod_donkey_map.
@@ -118,7 +118,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 ];
                 Factory::getApplication()->getDispatcher()->dispatch(
                     'onContentPrepare',
-                    new Event('onContentPrepare', $eventArguments)
+                    new ContentPrepareEvent('onContentPrepare', $eventArguments)
                 );
             }
 
