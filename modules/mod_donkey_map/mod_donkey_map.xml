@@ -7,7 +7,7 @@
     <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
     <authorEmail>pieter@obix.nl</authorEmail>
     <authorUrl>www.obix.nl</authorUrl>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <description>MOD_DONKEY_MAP_XML_DESCRIPTION</description>
     <namespace path="src">Joomla\Module\DonkeyMap</namespace>
 
@@ -280,6 +280,24 @@
             </fieldset>
 
             <fieldset name="marker">
+                <field
+                        name="location_field_names"
+                        type="subform"
+                        label="MOD_DONKEY_MAP_FIELD_LOCATION_FIELD_NAMES_LABEL"
+                        multiple="true"
+                        required="false"
+                >
+                    <form>
+                        <field
+                                name="name"
+                                type="text"
+                                label="MOD_DONKEY_MAP_FIELD_LOCATION_FIELD_NAME_LABEL"
+                                required="true"
+                                default="location"
+                        />
+                    </form>
+                </field>
+
                 <field
                         name="default_marker_icon"
                         type="media"
