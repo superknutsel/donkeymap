@@ -86,7 +86,8 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         }
 
         // The article is supposed to have one or more custom fields of type input[type=text],
-        // whose names can be specified in the module. If no field names are specified, a field
+        // containing the location of the field as latitude,longitude. The names of the fields
+        // can be specified in the module. If no field names are specified, a field
         // named "location" is used by default. Location fields must contain a pair of
         // numeric coordinates formatted as: lat,long, e.g.: 54.12995696954786,-2.4445791703280912.
         if ($locationFieldNames = $this->params->get('location_field_names', null)) {
@@ -94,6 +95,11 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         } else {
             $locationFieldNames = ['location'];
         }
+
+        // The article can have a custom field of type input[type=text], containing an url to marker icon image.
+        // The name of this field can be specified in the module. If no field names is specified, a field
+        // named "marker-icon-image" is used by default.
+        $markerIconImageFieldName = $this->params->get('marker_icon_image_field_name', 'marker-icon-image');
 
         // Process articles matching any filter setting as configured in the module instance
         // and create marker objects based on their content.
@@ -104,7 +110,12 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             // Make custom field's accessible by name.
             $fieldsByName = ArrayHelper::pivot($article?->jcfields ?? [], 'name');
 
-            if (!count($articleLocationFieldNames = array_filter($locationFieldNames, fn(string $name) => isset($fieldsByName[$name])))) {
+            if (!count(
+                $articleLocationFieldNames = array_filter(
+                    $locationFieldNames,
+                    fn(string $name) => isset($fieldsByName[$name])
+                )
+            )) {
                 continue;
             }
 
@@ -127,6 +138,13 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                     'onContentPrepare',
                     new ContentPrepareEvent('onContentPrepare', $eventArguments)
                 );
+            }
+
+            $markerIconFile = '';
+
+            if ($markerIconImageFieldName && ($fieldsByName[$markerIconImageFieldName] ?? null) && !empty($fieldsByName[$markerIconImageFieldName]?->rawvalue ?? null)) {
+                $markerIconImageFieldValue = json_decode($fieldsByName[$markerIconImageFieldName]->rawvalue);
+                $markerIconFile            = Uri::root() . $markerIconImageFieldValue->imagefile;
             }
 
             foreach ($articleLocationFieldNames as $locationFieldName) {
@@ -172,6 +190,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                         'content' => trim($popupContent),
                         'link'    => trim($article->link),
                     ],
+                    'icon'        => $markerIconFile
                 ];
             }
         }

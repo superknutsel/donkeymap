@@ -7,7 +7,7 @@
     <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
     <authorEmail>pieter@obix.nl</authorEmail>
     <authorUrl>www.obix.nl</authorUrl>
-    <version>3.1.0</version>
+    <version>3.2.0</version>
     <description>MOD_DONKEY_MAP_XML_DESCRIPTION</description>
     <namespace path="src">Joomla\Module\DonkeyMap</namespace>
 
@@ -305,6 +305,14 @@
                         preview="tooltip"
                         preview_width="40"
                         preview_height="40"
+                />
+
+                <field
+                        name="article_marker_icon_field_name"
+                        type="text"
+                        label="MOD_DONKEY_MAP_ARTICLE_MARKER_ICON_FIELD_NAME_LABEL"
+                        required="false"
+                        default="marker-icon-image"
                 />
 
                 <field

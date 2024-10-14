@@ -1,5 +1,5 @@
 import '../../../node_modules/leaflet/dist/leaflet.css';
-import {Map as LeafletMap, TileLayer, LayerGroup, Marker, Control, Icon, Polygon} from "leaflet";
+import {Control, Icon, LayerGroup, Map as LeafletMap, Marker, Polygon, TileLayer} from "leaflet";
 import {MarkerClusterGroup} from "leaflet.markercluster";
 
 export default class DonkeyMap {
@@ -64,8 +64,12 @@ export default class DonkeyMap {
             const groupKey = item.group.type + '.' + item.group.id;
             // Get the name of the Layer, to be used as the index for the layer groups Map.
             const layerName = item.group.title;
+            const itemIcon =  item.icon.trim()
+                ? new donkeyMapIcon({iconUrl:  item.icon.trim()}) : undefined;
             // Get the item's icon , using the default icon if no such icon exists for the item.
-            const markerIcon = iconsByGroup.has(groupKey) ? iconsByGroup.get(groupKey) : defaultIcon;
+            const markerIcon = itemIcon ? itemIcon : (iconsByGroup.has(groupKey) ? iconsByGroup.get(groupKey) : defaultIcon);
+
+            console.debug({defaultIcon: defaultIcon, groupIcon: iconsByGroup.has(groupKey) ? iconsByGroup.get(groupKey) : '', markerIcon: markerIcon});
 
             // No item specif icon, nor a default icon, so ther's nothing to display.
             if (!markerIcon) {

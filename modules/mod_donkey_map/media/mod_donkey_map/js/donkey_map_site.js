@@ -11483,7 +11483,9 @@
       this.markerList.forEach((item) => {
         const groupKey = item.group.type + "." + item.group.id;
         const layerName = item.group.title;
-        const markerIcon = iconsByGroup.has(groupKey) ? iconsByGroup.get(groupKey) : defaultIcon;
+        const itemIcon = item.icon.trim() ? new donkeyMapIcon({ iconUrl: item.icon.trim() }) : void 0;
+        const markerIcon = itemIcon ? itemIcon : iconsByGroup.has(groupKey) ? iconsByGroup.get(groupKey) : defaultIcon;
+        console.debug({ defaultIcon, groupIcon: iconsByGroup.has(groupKey) ? iconsByGroup.get(groupKey) : "", markerIcon });
         if (!markerIcon) {
           return;
         }
