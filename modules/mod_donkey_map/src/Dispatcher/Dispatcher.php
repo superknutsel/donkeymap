@@ -170,7 +170,7 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         $iconAnchorParam      = $data['params']->get('icon_anchor');
         $iconPopupAnchorParam = $data['params']->get('icon_popup_anchor');
 
-        if ($defaultIcon = $data['params']->get('default_marker_icon', '')) {
+        if ($defaultIcon = $data['params']->get('default_marker_icon', 'media/mod_donkey_map/images/marker-default.png')) {
             $defaultIcon = Uri::root() . $defaultIcon;
         }
 
