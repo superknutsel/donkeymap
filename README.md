@@ -9,3 +9,7 @@ Module with markers and contour within an area
 # Tips
 - create category polygon and set it to noindex / nofollow
 - create and article per polygon with no text editor active in this category and also set in to noindex / nofollow
+
+# Marker Icon Image per article
+- create a custom field of the type media
+- enter the name of the field in the DonkeyMap module on the tab called Marker (Article marker icon field name).
