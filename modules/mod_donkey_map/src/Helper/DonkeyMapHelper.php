@@ -99,7 +99,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         // The article can have a custom field of type input[type=text], containing an url to marker icon image.
         // The name of this field can be specified in the module. If no field names is specified, a field
         // named "marker-icon-image" is used by default.
-        $markerIconImageFieldName = $this->params->get('marker_icon_image_field_name', 'marker-icon-image');
+        $markerIconImageFieldName = $this->params->get('article_marker_icon_field_name', 'marker-icon-image');
 
         // Process articles matching any filter setting as configured in the module instance
         // and create marker objects based on their content.
