@@ -16,9 +16,11 @@ Module with markers and contour within an area
 
 ## Customise the content of the marker pop-up
 Create a custom field with the name **donkeymap-pop-up-content**
-In an article you can add in this custom field other custom fields within double curly brackets like this :
->{{custom-field-name}}
+In an article you can add in this custom field other custom fields within double curly brackets like this :<br />
+>{{custom-field-name}}<br />
+
 When a field is found with this name the content of it replaces ALL custom field content with the content of that one field. This will be displayed at the end of the pop-up.
+If you want to have some html in the pop-up make sure you set the Filter to the correct value (for example Safe HTML) in the General tab of the custom field.
 
 ## Show image in popup
 To turn off the display of the image in the pop-up create a custom field with the name : **show-article-image-in-map-marker-pop-up**.
