@@ -14,6 +14,14 @@ Module with markers and contour within an area
 - create a custom field of the type media
 - enter the name of the field in the DonkeyMap module on the tab called Marker (Article marker icon field name).
 
+## Marker priorities
+The order the markers are evaluated is :
+- Category markers
+- Marker default icon
+- Article marker, set inside the article
+- Tag markers
+
+
 ## Customise the content of the marker pop-up
 Create a custom field with the name **donkeymap-pop-up-content**
 In an article you can add in this custom field other custom fields within double curly brackets like this :<br />
