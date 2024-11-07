@@ -99,7 +99,8 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         // The article can have a custom field of type input[type=text], containing an url to marker icon image.
         // The name of this field can be specified in the module. If no field names is specified, a field
         // named "marker-icon-image" is used by default.
-        $markerIconImageFieldName = $this->params->get('article_marker_icon_field_name', 'marker-icon-image');
+        $markerIconImageFieldName = $this->params->get('article_marker_icon_field_name', '');
+        $popupContentFieldName    = $this->params->get('popup_content_field_name', '');
 
         // Process articles matching any filter setting as configured in the module instance
         // and create marker objects based on their content.
@@ -140,12 +141,55 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 );
             }
 
-            $markerIconFile = '';
+            $markerIconFile = $popupContentExtra = '';
 
             if ($markerIconImageFieldName && ($fieldsByName[$markerIconImageFieldName] ?? null) && !empty($fieldsByName[$markerIconImageFieldName]?->rawvalue ?? null)) {
                 $markerIconImageFieldValue = json_decode($fieldsByName[$markerIconImageFieldName]->rawvalue);
-                $markerIconFile            = Uri::root() . $markerIconImageFieldValue->imagefile;
+                $markerIconFile            = $markerIconImageFieldValue->imagefile ? Uri::root() . $markerIconImageFieldValue->imagefile : '';
             }
+
+            if (!$markerIconFile) {
+                $markerIconFile = $this->params->get('default_marker_icon', '');
+            }
+
+            if ($popupContentFieldName && ($fieldsByName[$popupContentFieldName] ?? null) && !empty($fieldsByName[$popupContentFieldName]?->rawvalue ?? null)) {
+                $popupContentExtra = str_replace(
+                    // Field names surrounded by '{{' and '}}'.
+                    array_map(fn(string $placeMarker) => '{{' . $placeMarker . '}}', array_keys($fieldsByName)),
+                    // Raw values of the fields whose names are embeded in the pop-up content custom field.
+                    array_map(fn(object $field) => $field->value, array_values($fieldsByName)),
+                    // The contents of the pop-up content custom field.
+                    $fieldsByName[$popupContentFieldName]->rawvalue
+                );
+            }
+
+            // Extract and decode the article's image data.
+            $articleImages = json_decode($article->images);
+
+            // Compose marker popup content by combining article intro text and image.
+
+            $showArticleImageArticleSetting = ($fieldsByName['show-article-image-in-map-marker-pop-up'] ?? null)
+                ? (int)$fieldsByName['show-article-image-in-map-marker-pop-up']->rawvalue
+                : 1;
+            $showArticleImageModuleSetting  = (int)$this->params->get('show_article_image_in_map_marker_pop_up', 1);
+            $showArticleImage               = $showArticleImageArticleSetting && $showArticleImageModuleSetting;
+
+            $popupContent = $article->introtext;
+
+            if ($showArticleImage && !empty($articleImages->image_intro)) :
+                $popupContent .= '<img src="' . Uri::root() . $articleImages->image_intro . '" style="width: 200px;">';
+            endif;
+
+            if ($popupContentExtra) {
+                $popupContent .= ' ' . $popupContentExtra;
+            }
+
+            $markerTitle = count($selectedCategoriesById) && array_key_exists(
+                (int)$article->catid,
+                $selectedCategoriesById
+            )
+                ? ($selectedCategoriesById[(int)$article->catid]->alternateTitle ?: $article->category_title)
+                : $article->category_title;
 
             foreach ($articleLocationFieldNames as $locationFieldName) {
                 if (!($coordinates = $this->extractLatLon($fieldsByName[$locationFieldName]))) {
@@ -155,23 +199,6 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 // Split coordinates into separate latitude and longitude values.
                 // TODO: validate and handle invalid input.
                 [$lat, $long] = $coordinates;
-
-                // Extract and decode the article's image data.
-                $articleImages = json_decode($article->images);
-
-                // Compose marker popup content by combining article intro text and image.
-                $popupContent = $article->introtext;
-                if (!empty($articleImages->image_intro)) :
-                    $popupContent .= '<img src="' . Uri::root(
-                        ) . $articleImages->image_intro . '" style="width: 200px;">';
-                endif;
-
-                $markerTitle = count($selectedCategoriesById) && array_key_exists(
-                    (int)$article->catid,
-                    $selectedCategoriesById
-                )
-                    ? ($selectedCategoriesById[(int)$article->catid]->alternateTitle ?: $article->category_title)
-                    : $article->category_title;
 
                 // Accumulate marker data as objects in an array.
                 $markers[] = (object)[
