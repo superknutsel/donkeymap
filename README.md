@@ -1,5 +1,6 @@
 # DonkeyMap
-Module with markers and contour within an area
+Module with markers and contour lines for a certain area.
+Can show different markers per category and per tag.
 
 ## Links
 - find the relation needed : [www.openstreetmap.org/relation/3123501#map=9/54.1377/-1.3885](https://www.openstreetmap.org/relation/3123501#map=9/54.1377/-1.3885)
