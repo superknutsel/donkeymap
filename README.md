@@ -1,6 +1,8 @@
 # DonkeyMap
-Module with markers and contour lines for a certain area.
-Can show different markers per category and per tag.
+Module with markers and contour lines for a certain area.<br />
+Can show different markers per category and per tag.<br />
+Works with location field from Tassos (acfmap) and also the legacy version of it. <br />
+Works with the YOOtheme Pro location field <br />
 
 ## Links
 - find the relation needed : [www.openstreetmap.org/relation/3123501#map=9/54.1377/-1.3885](https://www.openstreetmap.org/relation/3123501#map=9/54.1377/-1.3885)
