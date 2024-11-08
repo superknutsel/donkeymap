@@ -19,10 +19,11 @@ Works with the YOOtheme Pro location field <br />
 
 ## Marker priorities
 The order the markers are evaluated is :
-- Category markers
+- Article marker, set inside the article - if set this get's priority
+- Category markers - if set with it's own icon this marker is next in line
+- Tag markers - use only 1 tag
 - Marker default icon
-- Article marker, set inside the article
-- Tag markers
+
 
 
 ## Customise the content of the marker pop-up
