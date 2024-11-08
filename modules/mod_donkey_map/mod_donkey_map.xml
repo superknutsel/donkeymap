@@ -95,6 +95,7 @@
                                 layout="joomla.form.field.list-fancy-select"
                                 filter="intarray"
                                 required="true"
+                                multiple="false"
                         >
                             <option value="">JOPTION_SELECT_CATEGORY</option>
                         </field>
@@ -133,6 +134,7 @@
                                 extension="com_content"
                                 layout="joomla.form.field.list-fancy-select"
                                 required="true"
+                                multiple="false"
                         >
                             <option value="">JOPTION_SELECT_TAG</option>
                         </field>

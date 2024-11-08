@@ -105,11 +105,8 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         // Process articles matching any filter setting as configured in the module instance
         // and create marker objects based on their content.
         foreach ($this->getArticles($this->params, $this->app) as $article) {
-            // Get article's custom fields.
-            $article->jcfields = FieldsHelper::getFields('com_content.article', $article, true);
-
             // Make custom field's accessible by name.
-            $fieldsByName = ArrayHelper::pivot($article?->jcfields ?? [], 'name');
+            $fieldsByName = $article->jcfields;
 
             if (!count(
                 $articleLocationFieldNames = array_filter(
@@ -141,20 +138,11 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 );
             }
 
-            $markerIconFile = $popupContentExtra = '';
-
-            if ($markerIconImageFieldName && ($fieldsByName[$markerIconImageFieldName] ?? null) && !empty($fieldsByName[$markerIconImageFieldName]?->rawvalue ?? null)) {
-                $markerIconImageFieldValue = json_decode($fieldsByName[$markerIconImageFieldName]->rawvalue);
-                $markerIconFile            = $markerIconImageFieldValue->imagefile ? Uri::root() . $markerIconImageFieldValue->imagefile : '';
-            }
-
-            if (!$markerIconFile) {
-                $markerIconFile = $this->params->get('default_marker_icon', '');
-            }
+            $popupContentExtra = '';
 
             if ($popupContentFieldName && ($fieldsByName[$popupContentFieldName] ?? null) && !empty($fieldsByName[$popupContentFieldName]?->rawvalue ?? null)) {
                 $popupContentExtra = str_replace(
-                    // Field names surrounded by '{{' and '}}'.
+                // Field names surrounded by '{{' and '}}'.
                     array_map(fn(string $placeMarker) => '{{' . $placeMarker . '}}', array_keys($fieldsByName)),
                     // Raw values of the fields whose names are embeded in the pop-up content custom field.
                     array_map(fn(object $field) => $field->value, array_values($fieldsByName)),
@@ -167,7 +155,6 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             $articleImages = json_decode($article->images);
 
             // Compose marker popup content by combining article intro text and image.
-
             $showArticleImageArticleSetting = ($fieldsByName['show-article-image-in-map-marker-pop-up'] ?? null)
                 ? (int)$fieldsByName['show-article-image-in-map-marker-pop-up']->rawvalue
                 : 1;
@@ -217,7 +204,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                         'content' => trim($popupContent),
                         'link'    => trim($article->link),
                     ],
-                    'icon'        => $markerIconFile
+                    'icon'        => $article->markerIconFile
                 ];
             }
         }
@@ -314,28 +301,76 @@ class DonkeyMapHelper implements DatabaseAwareInterface
      */
     public function getArticles(): \Generator
     {
+        yield from $this->getArticlesByCategory();
+        yield from $this->getArticlesByTag();
+    }
+
+    private function getArticlesByCategory(): \Generator
+    {
         // Category filter
         $markerCategoryIds = array_map(fn(object $category) => (int)$category->id[0],
             array_values((array)$this->params->get('categories', [])));
 
-        if (count($markerCategoryIds)) {
-            $model = $this->getArticlesModel();
-            // For this query we don't need tag data
-            $model->setState('load_tags', false);
-
-            foreach ($this->getFilteredArticles($model, ['filter.category_id' => $markerCategoryIds]) as $article) {
-                $article = (array)$article;
-
-                $article['markerType']   = 'category';
-                $article['markerTypeId'] = (int)$article['catid'];
-
-                yield (object)$article;
-            }
+        if (!count($markerCategoryIds)) {
+            return;
         }
 
-        // Tag filter
+        $categoryMarkers = array_reduce(
+            array_values((array)$this->params->get('categories', [])),
+            function (array $carry, object $category) {
+                if (trim($category->icon) !== '') {
+                    $carry[(int)$category->id[0]] = $category->icon;
+                }
+
+                return $carry;
+            },
+            []
+        );
+
+        $model = $this->getArticlesModel();
+        // For this query we don't need tag data
+        $model->setState('load_tags', false);
+
+        foreach ($this->getFilteredArticles($model, ['filter.category_id' => $markerCategoryIds]) as $article) {
+            $article = (array)$article;
+
+            // Get article's custom fields.
+            $article['jcfields'] = ArrayHelper::pivot(
+                FieldsHelper::getFields('com_content.article', $article, true),
+                'name'
+            );
+
+            $article['markerType']     = 'category';
+            $article['markerTypeId']   = (int)$article['catid'];
+            $article['markerIconFile'] = null;
+
+            $article                 = (object)$article;
+            $article->markerIconFile = $this->getMarkerFile($article, $categoryMarkers[$article->catid] ?? '');
+
+            yield $article;
+        }
+    }
+
+    private function getArticlesByTag(): \Generator
+    {
         $markerTagIds = array_map(fn(object $tag) => (int)$tag->id,
             array_values((array)$this->params->get('tags', [])));
+
+        if (!count($markerTagIds)) {
+            return;
+        }
+
+        $tagMarkers   = array_reduce(
+            array_values((array)$this->params->get('tags', [])),
+            function (array $carry, object $tag) {
+                if (trim($tag->icon) !== '') {
+                    $carry[(int)$tag->id] = $tag->icon;
+                }
+
+                return $carry;
+            },
+            []
+        );
 
         if (count($markerTagIds)) {
             $model = $this->getArticlesModel();
@@ -348,13 +383,39 @@ class DonkeyMapHelper implements DatabaseAwareInterface
 
                 $article = (array)$article;
 
+                // Get article's custom fields.
+                $article['jcfields'] = ArrayHelper::pivot(
+                    FieldsHelper::getFields('com_content.article', $article, true),
+                    'name'
+                );
+
                 $article['markerType'] = 'tag';
                 // Use first tag if multiple tags apply.
-                $article['markerTypeId'] = $tagIds[0];
+                $article['markerTypeId']   = $tagIds[0];
+                $article['markerIconFile'] = null;
 
-                yield (object)$article;
+                $article                 = (object)$article;
+                $article->markerIconFile = $this->getMarkerFile($article, $tagMarkers[$tagIds[0] ?? 0] ?? '');
+
+                yield $article;
             }
         }
+    }
+
+    private function getMarkerFile(object $article, string $defaultModuleMarkerFile = ''): string
+    {
+        $markerIconImageFieldName = $this->params->get('article_marker_icon_field_name', '');
+        $fieldsByName             = $article->jcfields ?? [];
+
+        if ($markerIconImageFieldName && ($fieldsByName[$markerIconImageFieldName] ?? null) && !empty($fieldsByName[$markerIconImageFieldName]?->rawvalue ?? null)) {
+            $markerIconImageFieldValue = json_decode($fieldsByName[$markerIconImageFieldName]->rawvalue);
+
+            if (trim($markerIconImageFieldValue->imagefile) !== '') {
+                return Uri::root() . $markerIconImageFieldValue->imagefile;
+            }
+        }
+
+        return $defaultModuleMarkerFile ?: $this->params->get('default_marker_icon', '');
     }
 
     /**
