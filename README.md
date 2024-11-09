@@ -1,7 +1,7 @@
 # DonkeyMap
 Module with markers and contour lines for a certain area.<br />
 Can show different markers per category and per tag.<br />
-Works with location field from Tassos (acfmap) and also the legacy version of it. <br />
+Works with location field from Tassos (acfmap) and also the legacy version (acfosm)  of it. <br />
 Works with the YOOtheme Pro location field <br />
 
 ## Links
