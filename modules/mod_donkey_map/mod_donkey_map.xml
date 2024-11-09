@@ -7,7 +7,7 @@
     <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
     <authorEmail>pieter@obix.nl</authorEmail>
     <authorUrl>www.obix.nl</authorUrl>
-    <version>3.3.0</version>
+    <version>3.3.1</version>
     <description>MOD_DONKEY_MAP_XML_DESCRIPTION</description>
     <namespace path="src">Joomla\Module\DonkeyMap</namespace>
 
