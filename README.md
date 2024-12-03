@@ -34,6 +34,8 @@ In an article you can add in this custom field other custom fields within double
 When a field is found with this name the content of it replaces ALL custom field content with the content of that one field. This will be displayed at the end of the popup.
 If you want to have some html in the popup make sure you set the Filter to the correct value (for example Safe HTML) in the General tab of the custom field.
 
+You can change the behaviour of the article link on the tab Popup in the module so for example the link opens in a new tab.
+
 ## Show image in popup
 To turn off the display of the image in the popup create a custom field with the name : **show-article-image-in-map-marker-popup**.
 Add two entries with values 0 and 1 to this custom field.
