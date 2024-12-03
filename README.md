@@ -26,15 +26,15 @@ The order the markers are evaluated is :
 
 
 
-## Customise the content of the marker pop-up
-Create a custom field with the name **donkeymap-pop-up-content**
+## Customise the content of the marker popup
+Create a custom field with the name **donkeymap-popup-content**
 In an article you can add in this custom field other custom fields within double curly brackets like this :<br />
 >{{custom-field-name}}<br />
 
-When a field is found with this name the content of it replaces ALL custom field content with the content of that one field. This will be displayed at the end of the pop-up.
-If you want to have some html in the pop-up make sure you set the Filter to the correct value (for example Safe HTML) in the General tab of the custom field.
+When a field is found with this name the content of it replaces ALL custom field content with the content of that one field. This will be displayed at the end of the popup.
+If you want to have some html in the popup make sure you set the Filter to the correct value (for example Safe HTML) in the General tab of the custom field.
 
 ## Show image in popup
-To turn off the display of the image in the pop-up create a custom field with the name : **show-article-image-in-map-marker-pop-up**.
+To turn off the display of the image in the popup create a custom field with the name : **show-article-image-in-map-marker-popup**.
 Add two entries with values 0 and 1 to this custom field.
 If this field does not exist the image is displayed by default

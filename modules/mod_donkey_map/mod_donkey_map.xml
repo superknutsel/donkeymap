@@ -414,7 +414,7 @@
                 />
 
                 <field
-                        name="show_article_image_in_map_marker_pop_up"
+                        name="show_article_image_in_map_marker_popup"
                         type="radio"
                         default="1"
                         label="MOD_DONKEY_MAP_SHOW_IMAGE_IN_POPUP_LABEL"

@@ -144,9 +144,9 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 $popupContentExtra = str_replace(
                 // Field names surrounded by '{{' and '}}'.
                     array_map(fn(string $placeMarker) => '{{' . $placeMarker . '}}', array_keys($fieldsByName)),
-                    // Raw values of the fields whose names are embeded in the pop-up content custom field.
+                    // Raw values of the fields whose names are embeded in the popup content custom field.
                     array_map(fn(object $field) => $field->value, array_values($fieldsByName)),
-                    // The contents of the pop-up content custom field.
+                    // The contents of the popup content custom field.
                     $fieldsByName[$popupContentFieldName]->rawvalue
                 );
             }
@@ -155,11 +155,14 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             $articleImages = json_decode($article->images);
 
             // Compose marker popup content by combining article intro text and image.
-            $showArticleImageArticleSetting = ($fieldsByName['show-article-image-in-map-marker-pop-up'] ?? null)
+            $showArticleImageArticleSetting = ($fieldsByName['show-article-image-in-map-marker-popup'] ?? null)
                 ? (int)$fieldsByName['show-article-image-in-map-marker-pop-up']->rawvalue
                 : 1;
-            $showArticleImageModuleSetting  = (int)$this->params->get('show_article_image_in_map_marker_pop_up', 1);
-            $showArticleImage               = $showArticleImageArticleSetting && $showArticleImageModuleSetting;
+
+            $showArticleImageModuleSetting = $this->params->exists('show_article_image_in_map_marker_popup', 1)
+                ? (int)$this->params->get('show_article_image_in_map_marker_popup', 1)
+                : (int)$this->params->get('show_article_image_in_map_marker_pop_up', 1);
+            $showArticleImage              = $showArticleImageArticleSetting && $showArticleImageModuleSetting;
 
             $popupContent = $article->introtext;
 
