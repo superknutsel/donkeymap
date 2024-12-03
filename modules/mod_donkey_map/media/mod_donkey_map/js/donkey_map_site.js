@@ -11493,7 +11493,7 @@
           icon: markerIcon
         });
         if (item?.popup?.content && item?.popup?.link) {
-          marker.bindPopup('<a href="' + item.popup.link + '">' + item.title + "</a>" + item.popup.content);
+          marker.bindPopup('<a href="' + item.popup.link + '" target="' + item.popup.linkTarget + '">' + item.title + "</a>" + item.popup.content);
           if (this.customHandlers && this.customHandlers.hasOwnProperty("marker")) {
             Object.entries(this.customHandlers.marker).forEach(([eventName, handler]) => {
               marker.addEventListener(eventName, handler);

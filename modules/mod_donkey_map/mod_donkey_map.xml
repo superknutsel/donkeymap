@@ -301,26 +301,6 @@
                 </field>
 
                 <field
-                        name="popup_content_field_name"
-                        type="text"
-                        label="MOD_DONKEY_MAP_ARTICLE_MARKER_POPUP_CONTENT_FIELD_NAME_LABEL"
-                        required="false"
-                        default=""
-                />
-
-                <field
-                        name="show_article_image_in_map_marker_pop_up"
-                        type="radio"
-                        default="1"
-                        label="MOD_DONKEY_MAP_SHOW_IMAGE_IN_POPUP_LABEL"
-                        layout="joomla.form.field.radio.switcher"
-                        class="btn-group btn-group-yesno">
-                    <option value="0">JNO</option>
-                    <option value="1">JYES</option>
-                </field>
-
-
-                <field
                         name="default_marker_icon"
                         type="media"
                         label="MOD_DONKEY_MAP_FIELD_DEFAULT_ICON_LABEL"
@@ -421,6 +401,39 @@
                         class="btn-group btn-group-yesno">
                     <option value="0">JNO</option>
                     <option value="1">JYES</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="popup">
+                <field
+                        name="popup_content_field_name"
+                        type="text"
+                        label="MOD_DONKEY_MAP_ARTICLE_MARKER_POPUP_CONTENT_FIELD_NAME_LABEL"
+                        required="false"
+                        default=""
+                />
+
+                <field
+                        name="show_article_image_in_map_marker_pop_up"
+                        type="radio"
+                        default="1"
+                        label="MOD_DONKEY_MAP_SHOW_IMAGE_IN_POPUP_LABEL"
+                        layout="joomla.form.field.radio.switcher"
+                        class="btn-group btn-group-yesno">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+
+                <field
+                        name="popup_content_link_target"
+                        type="list"
+                        default="_self"
+                        label="MOD_DONKEY_MAP_POPUP_CONTENT_LINK_TARGET_LABEL"
+                >
+                    <option value="_self">MOD_DONKEY_MAP_POPUP_CONTENT_LINK_TARGET_SELF</option>
+                    <option value="_blank">MOD_DONKEY_MAP_POPUP_CONTENT_LINK_TARGET_BLANK</option>
+                    <option value="_parent">MOD_DONKEY_MAP_POPUP_CONTENT_LINK_TARGET_PARENT</option>
+                    <option value="_top">MOD_DONKEY_MAP_POPUP_CONTENT_LINK_TARGET_TOP</option>
                 </field>
             </fieldset>
 

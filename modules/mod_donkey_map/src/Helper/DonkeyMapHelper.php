@@ -201,8 +201,9 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                     ],
                     'title'       => $article->title,
                     'popup'       => (object)[
-                        'content' => trim($popupContent),
-                        'link'    => trim($article->link),
+                        'content'    => trim($popupContent),
+                        'link'       => trim($article->link),
+                        'linkTarget' => $this->params->get('popup_content_link_target', '_self')
                     ],
                     'icon'        => $article->markerIconFile
                 ];
@@ -360,7 +361,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             return;
         }
 
-        $tagMarkers   = array_reduce(
+        $tagMarkers = array_reduce(
             array_values((array)$this->params->get('tags', [])),
             function (array $carry, object $tag) {
                 if (trim($tag->icon) !== '') {
