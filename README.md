@@ -40,3 +40,8 @@ You can change the behaviour of the article link on the tab Popup in the module 
 To turn off the display of the image in the popup create a custom field with the name : **show-article-image-in-map-marker-popup**.
 Add two entries with values 0 and 1 to this custom field.
 If this field does not exist the image is displayed by default
+
+## Release a new version
+Using your command terminal go to  the `packages` folder and execute `./package.sh`
+The new file will include the version declared in the module's xml file.
+
