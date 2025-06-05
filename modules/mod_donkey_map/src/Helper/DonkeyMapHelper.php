@@ -374,8 +374,8 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             }
 
             $item->link = Route::_($url);
-            $item ->markerType     = 'category';
-            $item->markerTypeId   = 0;
+            $item ->markerType = 'default';
+            $item->markerTypeId = 0;
             $item->markerIconFile = $this->getMarkerFile($item);
 
             yield $item;
