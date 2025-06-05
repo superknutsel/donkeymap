@@ -344,6 +344,11 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             'Site',
             ['ignore_request' => false]
         );
+        // This is called just to execute the `populateState' fn in the model. Without calling it, our set states will be overridden.
+        $model->getState();
+        $model->setState('list.start', 0);
+        // Set the filters based on the module params
+        $model->setState('list.limit', (int)$this->params->get('count', 5));
 
         $items = $model->getItems();
 
