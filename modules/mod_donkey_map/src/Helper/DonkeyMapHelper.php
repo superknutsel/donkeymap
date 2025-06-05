@@ -16,6 +16,7 @@ use Joomla\CMS\Application\CMSApplicationInterface;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Event\Content\ContentPrepareEvent;
 use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\MVC\Model\ListModel;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Router\Route;
@@ -501,8 +502,12 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 return Uri::root() . $markerIconImageFieldValue->imagefile;
             }
         }
-
-        return $defaultModuleMarkerFile ?: $this->params->get('default_marker_icon', '');
+        $defaultModuleMarkerFile = $defaultModuleMarkerFile ?: $this->params->get('default_marker_icon', '');
+        if ($defaultModuleMarkerFile) {
+            $defaultModuleMarkerFile = HTMLHelper::_('cleanImageURL', $defaultModuleMarkerFile);
+            return Uri::root() . $defaultModuleMarkerFile->url;
+        }
+        return '';
     }
 
     /**

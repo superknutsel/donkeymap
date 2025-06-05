@@ -12,6 +12,7 @@ namespace Joomla\Module\DonkeyMap\Site\Dispatcher;
 use Joomla\CMS\Dispatcher\AbstractModuleDispatcher;
 use Joomla\CMS\Helper\HelperFactoryAwareInterface;
 use Joomla\CMS\Helper\HelperFactoryAwareTrait;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Uri\Uri;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -184,7 +185,8 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
         $iconPopupAnchorParam = $data['params']->get('icon_popup_anchor');
 
         if ($defaultIcon = $data['params']->get('default_marker_icon', 'media/mod_donkey_map/images/marker-default.png')) {
-            $defaultIcon = Uri::root() . $defaultIcon;
+            $defaultIconObj = HTMLHelper::_('cleanImageURL', $defaultIcon);
+            $defaultIcon = Uri::root() . $defaultIconObj->url;
         }
 
         return (object)[
