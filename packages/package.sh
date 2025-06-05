@@ -1,4 +1,4 @@
-baseDir=/home/pieter-jan/projects/delinie-ict/donkeymap
+baseDir="$(dirname "$(pwd)")"
 packageDir=$baseDir/packages
 
 exclude=".git .gitignore \*update*.xml"
