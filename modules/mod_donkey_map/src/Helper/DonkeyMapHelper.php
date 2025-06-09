@@ -16,6 +16,7 @@ use Joomla\CMS\Application\CMSApplicationInterface;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Event\Content\ContentPrepareEvent;
 use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\MVC\Model\ListModel;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Router\Route;
@@ -343,6 +344,11 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             'Site',
             ['ignore_request' => false]
         );
+        // This is called just to execute the `populateState' fn in the model. Without calling it, our set states will be overridden.
+        $model->getState();
+        $model->setState('list.start', 0);
+        // Set the filters based on the module params
+        $model->setState('list.limit', (int)$this->params->get('count', 5));
 
         $items = $model->getItems();
 
@@ -358,23 +364,24 @@ class DonkeyMapHelper implements DatabaseAwareInterface
 
         foreach ($items as $item) {
             if ($access || \in_array($item->access, $authorised)) {
-                $item->jcfields = $item->_fields ?? $this->getCustomFields($item);
                 if ($context === 'com_jfilters.results') {
                     $url = $item->url;
+                    $item->jcfields = $item->_fields;
                     $item->introtext = $item->summary;
                     $item->fulltext = $item->body;
                 } else {
                     $item->slug = $item->id . ':' . $item->alias;
                     // We know that user has the privilege to view the article
                     $url = RouteHelper::getArticleRoute($item->slug, $item->catid, $item->language);
+                    $item->jcfields = $this->getCustomFields($item);
                 }
             } else {
                 $url = 'index.php?option=com_users&view=login';
             }
 
             $item->link = Route::_($url);
-            $item ->markerType     = 'category';
-            $item->markerTypeId   = 0;
+            $item ->markerType = 'default';
+            $item->markerTypeId = 0;
             $item->markerIconFile = $this->getMarkerFile($item);
 
             yield $item;
@@ -500,8 +507,12 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 return Uri::root() . $markerIconImageFieldValue->imagefile;
             }
         }
-
-        return $defaultModuleMarkerFile ?: $this->params->get('default_marker_icon', '');
+        $defaultModuleMarkerFile = $defaultModuleMarkerFile ?: $this->params->get('default_marker_icon', '');
+        if ($defaultModuleMarkerFile) {
+            $defaultModuleMarkerFile = HTMLHelper::_('cleanImageURL', $defaultModuleMarkerFile);
+            return Uri::root() . $defaultModuleMarkerFile->url;
+        }
+        return '';
     }
 
     /**
