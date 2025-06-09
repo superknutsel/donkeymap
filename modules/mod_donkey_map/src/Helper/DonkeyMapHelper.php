@@ -364,16 +364,15 @@ class DonkeyMapHelper implements DatabaseAwareInterface
 
         foreach ($items as $item) {
             if ($access || \in_array($item->access, $authorised)) {
+                $item->jcfields = $item->_fields ?? $this->getCustomFields($item);
                 if ($context === 'com_jfilters.results') {
                     $url = $item->url;
-                    $item->jcfields = $item->_fields;
                     $item->introtext = $item->summary;
                     $item->fulltext = $item->body;
                 } else {
                     $item->slug = $item->id . ':' . $item->alias;
                     // We know that user has the privilege to view the article
                     $url = RouteHelper::getArticleRoute($item->slug, $item->catid, $item->language);
-                    $item->jcfields = $this->getCustomFields($item);
                 }
             } else {
                 $url = 'index.php?option=com_users&view=login';
