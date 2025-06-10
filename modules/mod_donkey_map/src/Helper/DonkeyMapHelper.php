@@ -16,6 +16,8 @@ use Joomla\CMS\Application\CMSApplicationInterface;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Event\Content\ContentPrepareEvent;
 use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\MVC\Model\ListModel;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri;
@@ -45,6 +47,17 @@ class DonkeyMapHelper implements DatabaseAwareInterface
      * @var \Joomla\Registry\Registry|mixed
      */
     private Registry $params;
+
+    /**
+     * The supported contexts for the auto-detect feature
+     * @var array
+     * @since 4.0.0
+     */
+    protected const SUPPORTED_CONTEXT =
+        [
+            'com_content.category',
+            'com_jfilters.results'
+        ];
 
     /**
      * @param   \Joomla\CMS\Application\SiteApplication  $app
@@ -104,7 +117,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
 
         // Process articles matching any filter setting as configured in the module instance
         // and create marker objects based on their content.
-        foreach ($this->getArticles($this->params, $this->app) as $article) {
+        foreach ($this->getArticles() as $article) {
             // Make custom field's accessible by name.
             $fieldsByName = $article->jcfields;
 
@@ -305,8 +318,73 @@ class DonkeyMapHelper implements DatabaseAwareInterface
      */
     public function getArticles(): \Generator
     {
-        yield from $this->getArticlesByCategory();
-        yield from $this->getArticlesByTag();
+        if (!$this->params->get('autodetect', 0)) {
+            yield from $this->getArticlesByCategory();
+            yield from $this->getArticlesByTag();
+        }
+        else {
+            yield from $this->getArticlesByContext();
+        }
+    }
+
+    private function getArticlesByContext(): \Generator
+    {
+        $input = $this->app->getInput();
+        $component = $input->get('option');
+        $view = $input->get('view');
+        $context = $component . '.' . $view;
+        // Non supported context
+        if (!in_array($context, self::SUPPORTED_CONTEXT)) {
+            return;
+        }
+
+        /** @var ListModel $model */
+        $model = $this->app->bootComponent($component)->getMVCFactory()->createModel(
+            $view,
+            'Site',
+            ['ignore_request' => false]
+        );
+        // This is called just to execute the `populateState' fn in the model. Without calling it, our set states will be overridden.
+        $model->getState();
+        $model->setState('list.start', 0);
+        // Set the filters based on the module params
+        $model->setState('list.limit', (int)$this->params->get('count', 5));
+
+        $items = $model->getItems();
+
+        if (!$items) {
+            return ;
+        }
+
+        $user = $this->app->getIdentity();
+
+        // Authotisation and acces permission.
+        $access     = !ComponentHelper::getParams('com_content')->get('show_noauth');
+        $authorised = Access::getAuthorisedViewLevels($user->id);
+
+        foreach ($items as $item) {
+            if ($access || \in_array($item->access, $authorised)) {
+                $item->jcfields = $item->_fields ?? $this->getCustomFields($item);
+                if ($context === 'com_jfilters.results') {
+                    $url = $item->url;
+                    $item->introtext = $item->summary;
+                    $item->fulltext = $item->body;
+                } else {
+                    $item->slug = $item->id . ':' . $item->alias;
+                    // We know that user has the privilege to view the article
+                    $url = RouteHelper::getArticleRoute($item->slug, $item->catid, $item->language);
+                }
+            } else {
+                $url = 'index.php?option=com_users&view=login';
+            }
+
+            $item->link = Route::_($url);
+            $item ->markerType = 'default';
+            $item->markerTypeId = 0;
+            $item->markerIconFile = $this->getMarkerFile($item);
+
+            yield $item;
+        }
     }
 
     private function getArticlesByCategory(): \Generator
@@ -339,10 +417,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
             $article = (array)$article;
 
             // Get article's custom fields.
-            $article['jcfields'] = ArrayHelper::pivot(
-                FieldsHelper::getFields('com_content.article', $article, true),
-                'name'
-            );
+            $article['jcfields'] = $this->getCustomFields($article);
 
             $article['markerType']     = 'category';
             $article['markerTypeId']   = (int)$article['catid'];
@@ -388,10 +463,7 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 $article = (array)$article;
 
                 // Get article's custom fields.
-                $article['jcfields'] = ArrayHelper::pivot(
-                    FieldsHelper::getFields('com_content.article', $article, true),
-                    'name'
-                );
+                $article['jcfields'] = $this->getCustomFields($article);
 
                 $article['markerType'] = 'tag';
                 // Use first tag if multiple tags apply.
@@ -406,6 +478,22 @@ class DonkeyMapHelper implements DatabaseAwareInterface
         }
     }
 
+    /**
+     * Get the custom fields for that item
+     *
+     * @param $item
+     * @return array
+     * @throws \Exception
+     * @since 4.0.0
+     */
+    protected function getCustomFields($item)
+    {
+        return ArrayHelper::pivot(
+            FieldsHelper::getFields('com_content.article', $item, true),
+            'name'
+        );
+    }
+
     private function getMarkerFile(object $article, string $defaultModuleMarkerFile = ''): string
     {
         $markerIconImageFieldName = $this->params->get('article_marker_icon_field_name', '');
@@ -418,8 +506,12 @@ class DonkeyMapHelper implements DatabaseAwareInterface
                 return Uri::root() . $markerIconImageFieldValue->imagefile;
             }
         }
-
-        return $defaultModuleMarkerFile ?: $this->params->get('default_marker_icon', '');
+        $defaultModuleMarkerFile = $defaultModuleMarkerFile ?: $this->params->get('default_marker_icon', '');
+        if ($defaultModuleMarkerFile) {
+            $defaultModuleMarkerFile = HTMLHelper::_('cleanImageURL', $defaultModuleMarkerFile);
+            return Uri::root() . $defaultModuleMarkerFile->url;
+        }
+        return '';
     }
 
     /**

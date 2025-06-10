@@ -12,6 +12,7 @@ namespace Joomla\Module\DonkeyMap\Site\Dispatcher;
 use Joomla\CMS\Dispatcher\AbstractModuleDispatcher;
 use Joomla\CMS\Helper\HelperFactoryAwareInterface;
 use Joomla\CMS\Helper\HelperFactoryAwareTrait;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Uri\Uri;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -140,44 +141,58 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
      */
     private function getMarkerConfig(array $data): object
     {
-        // Convert category/marker associations to an array containing marker groep config objects indexed by category id.
-        $selectedCategories     = array_values((array)$data['params']->get('categories', []));
-        $selectedCategoriesById = array_reduce($selectedCategories, function (array $carry, object $category) {
-            $carry['category.' . $category->id[0]] = (object)[
-                'id'             => $category->id[0],
-                'type'           => 'category',
-                'icon'           => $category->icon ? Uri::root() . $category->icon : '',
-                'alternateTitle' => $category->alternate_title ?: '',
-            ];
+        $selectedCategoriesById = [];
+        $selectedTagsById = [];
+        $default = [];
 
-            return $carry;
-        }, []);
+        if (!$data['params']->get('autodetect')) {
+            // Convert category/marker associations to an array containing marker groep config objects indexed by category id.
+            $selectedCategories = array_values((array)$data['params']->get('categories', []));
+            $selectedCategoriesById = array_reduce($selectedCategories, function (array $carry, object $category) {
+                $carry['category.' . $category->id[0]] = (object)[
+                    'id' => $category->id[0],
+                    'type' => 'category',
+                    'icon' => $category->icon ? Uri::root() . $category->icon : '',
+                    'alternateTitle' => $category->alternate_title ?: '',
+                ];
 
-        // Convert tag/marker associations to an array containing marker group config objects indexed by tag id.
-        $selectedTags     = array_values((array)$data['params']->get('tags', []));
-        $selectedTagsById = array_reduce($selectedTags, function (array $carry, object $tag) {
-            $carry['tag.' . $tag->id] = (object)[
-                'id'             => $tag->id,
-                'type'           => 'tag',
-                'icon'           => $tag->icon ? Uri::root() . $tag->icon : '',
-                'alternateTitle' => $tag->alternate_title ?: '',
-            ];
+                return $carry;
+            }, []);
 
-            return $carry;
-        }, []);
+            // Convert tag/marker associations to an array containing marker group config objects indexed by tag id.
+            $selectedTags = array_values((array)$data['params']->get('tags', []));
+            $selectedTagsById = array_reduce($selectedTags, function (array $carry, object $tag) {
+                $carry['tag.' . $tag->id] = (object)[
+                    'id' => $tag->id,
+                    'type' => 'tag',
+                    'icon' => $tag->icon ? Uri::root() . $tag->icon : '',
+                    'alternateTitle' => $tag->alternate_title ?: '',
+                ];
+
+                return $carry;
+            }, []);
+        } else {
+            $defaultMarker = new \stdClass();
+            $defaultMarker->id = 0;
+            $defaultMarker->type = 'default';
+            $defaultMarker->icon = '';
+            $defaultMarker->alternateTitle = '';
+            $default['default0'] = $defaultMarker;
+        }
 
         $iconSizeParam        = $data['params']->get('icon_size');
         $iconAnchorParam      = $data['params']->get('icon_anchor');
         $iconPopupAnchorParam = $data['params']->get('icon_popup_anchor');
 
         if ($defaultIcon = $data['params']->get('default_marker_icon', 'media/mod_donkey_map/images/marker-default.png')) {
-            $defaultIcon = Uri::root() . $defaultIcon;
+            $defaultIconObj = HTMLHelper::_('cleanImageURL', $defaultIcon);
+            $defaultIcon = Uri::root() . $defaultIconObj->url;
         }
 
         return (object)[
             'defaultIcon'       => $defaultIcon,
             // Create an array containing category id/icon combination objects.
-            'groups'            => array_merge($selectedCategoriesById, $selectedTagsById),
+            'groups'            => array_merge($selectedCategoriesById, $selectedTagsById, $default),
             'iconConfig'        => (object)[
                 'size'        => (object)[
                     'width'  => (int)$iconSizeParam->width,

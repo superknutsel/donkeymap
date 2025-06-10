@@ -23,7 +23,7 @@ use Joomla\CMS\Installer\InstallerAdapter;
  */
 class mod_donkey_mapInstallerScript
 {
-    protected string $minimumJoomla = '4.0';
+    protected string $minimumJoomla = '5.0';
     protected string $minimumPhp = '8.0';
 
 	/**
