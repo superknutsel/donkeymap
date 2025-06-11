@@ -2,12 +2,12 @@
 <extension type="module" client="site" method="upgrade">
     <name>MOD_DONKEY_MAP</name>
     <author>Obix webtechniek</author>
-    <creationDate>2026-06-09</creationDate>
+    <creationDate>2026-06-11</creationDate>
     <copyright>(C) 2023 Obix webtechniek/2025 Sakis Terzis</copyright>
     <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
     <authorEmail>pieter@obix.nl</authorEmail>
     <authorUrl>www.obix.nl</authorUrl>
-    <version>4.0.0beta3</version>
+    <version>4.0.0</version>
     <description>MOD_DONKEY_MAP_XML_DESCRIPTION</description>
     <namespace path="src">Joomla\Module\DonkeyMap</namespace>
 
