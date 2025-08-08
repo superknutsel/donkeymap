@@ -32,7 +32,9 @@ The order the markers are evaluated is :
 ## Customise the content of the marker popup
 Create a custom field with the name **donkeymap-popup-content**
 In an article you can add in this custom field other custom fields within double curly brackets like this :<br />
->{{custom-field-name}}<br />Using type editor and set the automatic display to none.
+>{{custom-field-name}}<br />
+
+Using type editor and set the automatic display to none.
 
 When a field is found with this name the content of it replaces ALL custom field content with the content of that one field. This will be displayed at the end of the popup.
 If you want to have some html in the popup make sure you set the Filter to the correct value (for example Safe HTML) in the General tab of the custom field.
